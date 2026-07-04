@@ -36,7 +36,7 @@ public class UsuarioController {
 	@PreAuthorize("hasAnyRole('ADMINISTRADOR', 'FUNCIONARIO_ADMINISTRATIVO')")
 	public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody CadastroUsuarioRequest request) {
 		UsuarioResponse response = usuarioService.criarUsuario(request, Set.of(TipoUsuario.PACIENTE), StatusUsuario.ATIVO);
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(201).body(response);
 	}
 
 	@PatchMapping("/{usuarioId}/status")

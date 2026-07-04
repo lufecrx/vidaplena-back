@@ -20,6 +20,7 @@ import ifba.engsoft.vidaplena.domain.model.PasswordResetToken;
 import ifba.engsoft.vidaplena.domain.model.StatusUsuario;
 import ifba.engsoft.vidaplena.domain.model.Usuario;
 import ifba.engsoft.vidaplena.domain.repository.PasswordResetTokenRepository;
+import ifba.engsoft.vidaplena.domain.repository.UsuarioRepository;
 import ifba.engsoft.vidaplena.infrastructure.mail.MailService;
 import ifba.engsoft.vidaplena.infrastructure.security.JwtService;
 import ifba.engsoft.vidaplena.interfaces.dto.auth.AuthResponse;
@@ -35,15 +36,17 @@ public class AuthService {
 
 	private final AuthenticationManager authenticationManager;
 	private final UsuarioService usuarioService;
+	private final UsuarioRepository usuarioRepository;
 	private final JwtService jwtService;
 	private final PasswordResetTokenRepository passwordResetTokenRepository;
 	private final MailService mailService;
 	private final SecureRandom secureRandom = new SecureRandom();
 
 	public AuthService(AuthenticationManager authenticationManager, UsuarioService usuarioService, JwtService jwtService,
-			PasswordResetTokenRepository passwordResetTokenRepository, MailService mailService) {
+			PasswordResetTokenRepository passwordResetTokenRepository, UsuarioRepository usuarioRepository, MailService mailService) {
 		this.authenticationManager = authenticationManager;
 		this.usuarioService = usuarioService;
+		this.usuarioRepository = usuarioRepository;
 		this.jwtService = jwtService;
 		this.passwordResetTokenRepository = passwordResetTokenRepository;
 		this.mailService = mailService;
@@ -62,8 +65,8 @@ public class AuthService {
 	}
 
 	public void solicitarRedefinicaoSenha(ForgotPasswordRequest request) {
-		Usuario usuario = usuarioService.buscarPorEmail(request.email());
-		gerarTokenRedefinicao(usuario);
+		usuarioRepository.findByEmailIgnoreCase(normalizarEmail(request.email()))
+				.ifPresent(this::gerarTokenRedefinicao);
 	}
 
 	public void redefinirSenha(ResetPasswordRequest request) {
@@ -101,5 +104,9 @@ public class AuthService {
 		} catch (NoSuchAlgorithmException ex) {
 			throw new IllegalStateException("SHA-256 indisponível", ex);
 		}
+	}
+
+	private String normalizarEmail(String email) {
+		return email == null ? null : email.trim().toLowerCase();
 	}
 }
