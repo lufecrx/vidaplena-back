@@ -54,7 +54,6 @@ public class JwtService {
 				&& claims.getExpiration().toInstant().isAfter(Instant.now());
 	}
 
-	@SuppressWarnings("unchecked")
 	public Set<String> extractRoles(String token) {
 		Object roles = parseClaims(token).get("tipos");
 		if (roles instanceof List<?> list) {

@@ -1,6 +1,5 @@
 package ifba.engsoft.vidaplena.domain.service;
 
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
