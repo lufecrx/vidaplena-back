@@ -1,3 +1,22 @@
 spring:
   application:
     name: vidaplena
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vidaplena}
+    username: ${SPRING_DATASOURCE_USERNAME:vidaplena}
+    password: ${SPRING_DATASOURCE_PASSWORD:vidaplena}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+app:
+  security:
+    jwt:
+      secret: ${VIDAPLENA_JWT_SECRET:vidaplena-please-change-this-secret-for-production-2026}
+      expiration: ${VIDAPLENA_JWT_EXPIRATION:PT1H}
+  mail:
+    enabled: ${VIDAPLENA_MAIL_ENABLED:false}

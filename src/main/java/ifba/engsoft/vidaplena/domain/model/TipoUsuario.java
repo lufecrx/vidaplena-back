@@ -1,0 +1,14 @@
+package ifba.engsoft.vidaplena.domain.model;
+
+public enum TipoUsuario {
+
+	ADMINISTRADOR,
+	PACIENTE,
+	RESPONSAVEL,
+	MEDICO,
+	NUTRICIONISTA,
+	PERSONAL_TRAINER,
+	FUNCIONARIO_ADMINISTRATIVO,
+	CUIDADOR,
+	REPRESENTANTE_EMPRESA
+}
