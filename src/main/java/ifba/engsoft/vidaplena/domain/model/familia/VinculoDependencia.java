@@ -23,6 +23,9 @@ public class VinculoDependencia {
     @Column(name = "data_inicio", nullable = false)
     private LocalDate dataInicio;
 
+    @Column(name = "data_fim")
+    private LocalDate dataFim;
+
     @ManyToOne
     @JoinColumn(name = "responsavel_id", nullable = false)
     private Usuario responsavel;
@@ -64,6 +67,14 @@ public class VinculoDependencia {
 
     public void setDataInicio(LocalDate dataInicio) {
         this.dataInicio = dataInicio;
+    }
+
+    public LocalDate getDataFim() {
+        return dataFim;
+    }
+
+    public void setDataFim(LocalDate dataFim) {
+        this.dataFim = dataFim;
     }
 
     public Usuario getResponsavel() {

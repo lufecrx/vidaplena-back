@@ -9,6 +9,7 @@ public record VinculoDependenciaResponseDTO(
     String responsavelNome,
     String dependenteNome,
     TipoDependencia tipo,
-    LocalDate dataInicio
+    LocalDate dataInicio,
+    LocalDate dataFim
 ) {
 }

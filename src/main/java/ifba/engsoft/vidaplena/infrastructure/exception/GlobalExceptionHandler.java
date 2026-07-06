@@ -18,9 +18,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.server.ResponseStatusException;
 
+import ifba.engsoft.vidaplena.domain.service.familia.RegraNegocioException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+	/**
+	 * Trata exceções de status HTTP explícitas (ResponseStatusException).
+	 * 
+	 * @param ex exceção de status HTTP	
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP apropriado
+	 */
 	@ExceptionHandler(ResponseStatusException.class)
 	public ResponseEntity<ApiErrorResponse> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
 		HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
@@ -33,6 +42,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				List.of()));
 	}
 
+	/**
+	 * Trata exceções de segurança: acesso negado (403) e autenticação ausente/inválida (401).
+	 * 
+	 * @param ex exceção de segurança
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP apropriado
+	 */
 	@ExceptionHandler({AccessDeniedException.class, AuthenticationCredentialsNotFoundException.class})
 	public ResponseEntity<ApiErrorResponse> handleSecurity(RuntimeException ex, WebRequest request) {
 		HttpStatus status = ex instanceof AccessDeniedException ? HttpStatus.FORBIDDEN : HttpStatus.UNAUTHORIZED;
@@ -45,6 +61,39 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				List.of()));
 	}
 
+	/**
+	 * Trata exceções de validação de dados (Jakarta Validation / Spring Validator).
+	 * Lançada quando um DTO com @Valid falha nas validações (@NotBlank, @NotNull, @Pattern, etc.).
+	 * Retorna HTTP 400 Bad Request com detalhes dos campos inválidos.
+	 * 
+	 * @param ex exceção de validação
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP 400
+	 */
+	@ExceptionHandler(RegraNegocioException.class)
+	public ResponseEntity<ApiErrorResponse> handleRegraNegocio(RegraNegocioException ex, WebRequest request) {
+		List<String> details = List.of(ex.getMessage());
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(new ApiErrorResponse(
+				Instant.now(),
+				HttpStatus.UNPROCESSABLE_CONTENT.value(),
+				HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase(),
+				"Regra de negócio violada",
+				request.getDescription(false).replace("uri=", ""),
+				details));
+	}
+
+
+	/**
+	 * Trata exceções de validação de argumentos de método (MethodArgumentNotValidException).
+	 * Lançada quando um DTO com @Valid falha nas validações (@NotBlank, @NotNull, @Pattern, etc.).
+	 * Retorna HTTP 400 Bad Request com detalhes dos campos inválidos.	
+	 * 
+	 * @param ex exceção de validação
+	 * @param headers cabeçalhos HTTP
+	 * @param status status HTTP
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP 400
+	 */
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers,
 			HttpStatusCode status, WebRequest request) {
@@ -60,6 +109,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				details));
 	}
 
+	/**
+	 * Trata exceções de requisições malformadas (HttpMessageNotReadableException).
+	 * Lançada quando o corpo da requisição não pode ser lido ou convertido para o DTO esperado.
+	 * Retorna HTTP 400 Bad Request com detalhes do erro.
+	 * 
+	 * @param ex exceção de requisição malformada
+	 * @param headers cabeçalhos HTTP
+	 * @param status status HTTP
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP 400
+	 */
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers,
 			HttpStatusCode status, WebRequest request) {
@@ -72,6 +132,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				List.of(ex.getMostSpecificCause().getMessage())));
 	}
 
+	/**
+	 * Trata exceções inesperadas não capturadas por outros handlers.
+	 * 
+	 * @param ex exceção inesperada
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP 500
+	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception ex, WebRequest request) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(
