@@ -1,12 +1,13 @@
 package ifba.engsoft.vidaplena.domain.model.organizacao;
 
+import ifba.engsoft.vidaplena.infrastructure.auditing.EntidadeAuditavel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import java.util.UUID;
 
 @MappedSuperclass
-public abstract class Organizacao {
+public abstract class Organizacao extends EntidadeAuditavel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -1,6 +1,7 @@
 package ifba.engsoft.vidaplena.domain.model.familia;
 
 import ifba.engsoft.vidaplena.domain.model.Usuario;
+import ifba.engsoft.vidaplena.infrastructure.auditing.EntidadeAuditavel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -8,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "vinculos_dependencia")
-public class VinculoDependencia {
+public class VinculoDependencia extends EntidadeAuditavel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

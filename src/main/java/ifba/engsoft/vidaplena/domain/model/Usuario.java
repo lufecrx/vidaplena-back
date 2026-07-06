@@ -1,5 +1,6 @@
 package ifba.engsoft.vidaplena.domain.model;
 
+import ifba.engsoft.vidaplena.infrastructure.auditing.EntidadeAuditavel;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +21,7 @@ import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class Usuario extends EntidadeAuditavel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
