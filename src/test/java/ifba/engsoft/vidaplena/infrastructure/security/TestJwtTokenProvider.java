@@ -1,6 +1,5 @@
 package ifba.engsoft.vidaplena.infrastructure.security;
 
-import java.time.Instant;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
