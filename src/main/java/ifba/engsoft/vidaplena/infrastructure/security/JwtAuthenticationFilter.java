@@ -41,6 +41,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        // Verifica se já existe uma autenticação válida no SecurityContext.
+        // Isso permite que @WithMockUser e @WithUserDetails funcionem nos testes
+        // sem que o filtro JWT tente sobrescrever ou limpar a autenticação existente.
+        // Só pulamos o processamento JWT se a autenticação existir E não for uma autenticação anônima padrão.
+        var existingAuth = SecurityContextHolder.getContext().getAuthentication();
+        if (existingAuth != null && existingAuth.isAuthenticated()
+                && !(existingAuth.getClass().getName().contains("AnonymousAuthenticationToken"))) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
