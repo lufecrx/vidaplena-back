@@ -1,0 +1,98 @@
+package ifba.engsoft.vidaplena.domain.model.saude;
+
+import ifba.engsoft.vidaplena.domain.model.Usuario;
+import ifba.engsoft.vidaplena.infrastructure.auditing.EntidadeAuditavel;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Table(name = "pacientes")
+public class Paciente extends EntidadeAuditavel {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @NotNull(message = "O ID do usuário é obrigatório")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private Usuario usuario;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_sanguineo")
+    private TipoSanguineo tipoSanguineo;
+
+    @ElementCollection
+    @CollectionTable(name = "paciente_alergias", joinColumns = @JoinColumn(name = "paciente_id"))
+    @Column(name = "alergia")
+    private List<String> alergias;
+
+    @ElementCollection
+    @CollectionTable(name = "paciente_medicamentos_continuos", joinColumns = @JoinColumn(name = "paciente_id"))
+    @Column(name = "medicamento_continuo")
+    private List<String> medicamentosContinuos;
+
+    @Lob
+    @Column(name = "historico_familiar")
+    @Size(max = 10000, message = "O histórico familiar não pode exceder 10000 caracteres")
+    private String historicoFamiliar;
+
+    // Construtores
+    public Paciente() {}
+
+    public Paciente(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    // Getters e Setters
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public TipoSanguineo getTipoSanguineo() {
+        return tipoSanguineo;
+    }
+
+    public void setTipoSanguineo(TipoSanguineo tipoSanguineo) {
+        this.tipoSanguineo = tipoSanguineo;
+    }
+
+    public List<String> getAlergias() {
+        return alergias;
+    }
+
+    public void setAlergias(List<String> alergias) {
+        this.alergias = alergias;
+    }
+
+    public List<String> getMedicamentosContinuos() {
+        return medicamentosContinuos;
+    }
+
+    public void setMedicamentosContinuos(List<String> medicamentosContinuos) {
+        this.medicamentosContinuos = medicamentosContinuos;
+    }
+
+    public String getHistoricoFamiliar() {
+        return historicoFamiliar;
+    }
+
+    public void setHistoricoFamiliar(String historicoFamiliar) {
+        this.historicoFamiliar = historicoFamiliar;
+    }
+}
