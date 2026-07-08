@@ -19,6 +19,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.server.ResponseStatusException;
 
 import ifba.engsoft.vidaplena.domain.service.familia.RegraNegocioException;
+import ifba.engsoft.vidaplena.domain.service.saude.exception.RegistroImutavelException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -78,6 +79,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				HttpStatus.UNPROCESSABLE_CONTENT.value(),
 				HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase(),
 				"Regra de negócio violada",
+				request.getDescription(false).replace("uri=", ""),
+				details));
+	}
+
+	@ExceptionHandler(RegistroImutavelException.class)
+	public ResponseEntity<ApiErrorResponse> handleRegistroImutavel(RegistroImutavelException ex, WebRequest request) {
+		List<String> details = List.of(ex.getMessage());
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(new ApiErrorResponse(
+				Instant.now(),
+				HttpStatus.UNPROCESSABLE_CONTENT.value(),
+				HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase(),
+				"Registro clínico imutável",
 				request.getDescription(false).replace("uri=", ""),
 				details));
 	}
