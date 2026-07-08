@@ -40,4 +40,16 @@ public interface VinculoDependenciaRepository extends JpaRepository<VinculoDepen
      * Verifica se existe pelo menos um vínculo ativo envolvendo um usuário (como responsável ou dependente).
      */
     boolean existsByResponsavelIdOrDependenteIdAndDataFimIsNull(UUID responsavelId, UUID dependenteId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(v) FROM VinculoDependencia v WHERE v.dataFim IS NULL AND (v.responsavel.empresa.id = :empresaId OR v.dependente.empresa.id = :empresaId)")
+    long countActiveVinculosByEmpresaId(UUID empresaId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(v) FROM VinculoDependencia v WHERE v.dataFim IS NULL AND (v.responsavel.clinica.id = :clinicaId OR v.dependente.clinica.id = :clinicaId)")
+    long countActiveVinculosByClinicaId(UUID clinicaId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT v FROM VinculoDependencia v WHERE v.dataFim IS NULL AND (v.responsavel.empresa.id = :empresaId OR v.dependente.empresa.id = :empresaId)")
+    List<VinculoDependencia> findActiveVinculosByEmpresaId(UUID empresaId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT v FROM VinculoDependencia v WHERE v.dataFim IS NULL AND (v.responsavel.clinica.id = :clinicaId OR v.dependente.clinica.id = :clinicaId)")
+    List<VinculoDependencia> findActiveVinculosByClinicaId(UUID clinicaId);
 }

@@ -18,6 +18,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToOne;
+import ifba.engsoft.vidaplena.domain.model.organizacao.Clinica;
+import ifba.engsoft.vidaplena.domain.model.organizacao.Empresa;
 
 @Entity
 @Table(name = "usuarios")
@@ -53,6 +56,14 @@ public class Usuario extends EntidadeAuditavel {
 	@Column(name = "tipo_usuario", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Set<TipoUsuario> tipos = new HashSet<>();
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "empresa_id")
+	private Empresa empresa;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "clinica_id")
+	private Clinica clinica;
 
 	protected Usuario() {
 	}
@@ -166,5 +177,21 @@ public class Usuario extends EntidadeAuditavel {
 
 	public boolean possuiTipo(TipoUsuario tipoUsuario) {
 		return tipos.contains(tipoUsuario);
+	}
+
+	public Empresa getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Empresa empresa) {
+		this.empresa = empresa;
+	}
+
+	public Clinica getClinica() {
+		return clinica;
+	}
+
+	public void setClinica(Clinica clinica) {
+		this.clinica = clinica;
 	}
 }

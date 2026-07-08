@@ -18,4 +18,8 @@ public interface ProfissionalRepository extends JpaRepository<Profissional, UUID
     boolean existsByRegistroConselho(String registroConselho);
     
     Optional<Profissional> findByRegistroConselho(String registroConselho);
+
+    long countByClinicaId(UUID clinicaId);
+
+    java.util.List<Profissional> findByClinicaId(UUID clinicaId);
 }

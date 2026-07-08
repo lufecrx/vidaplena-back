@@ -154,6 +154,36 @@ public class FamiliaService {
                         "Família com ID " + familiaId + " não encontrada."
                 ));
 
+        // Validar se o usuário logado pertence à família (para roles PACIENTE/RESPONSAVEL)
+        // ou possui autorização profissional/admin para acessar os dados.
+        org.springframework.security.core.Authentication authentication = 
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            String email = authentication.getName();
+            Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email).orElse(null);
+            if (usuario != null) {
+                boolean isAdm = usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.ADMINISTRADOR);
+                boolean isProfissional = usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.MEDICO)
+                        || usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.NUTRICIONISTA)
+                        || usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.PERSONAL_TRAINER)
+                        || usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.CUIDADOR)
+                        || usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.FUNCIONARIO_ADMINISTRATIVO);
+                
+                boolean isPaciente = usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.PACIENTE);
+                boolean isResponsavel = usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.RESPONSAVEL);
+
+                if (!isAdm && !isProfissional && (isPaciente || isResponsavel)) {
+                    boolean pertence = familia.getMembros().stream()
+                            .anyMatch(membro -> membro.getId().equals(usuario.getId()));
+                    if (!pertence) {
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                "Usuário não pertence à família consultada e não possui permissão de acesso."
+                        );
+                    }
+                }
+            }
+        }
+
         return mapearParaResponseDTO(familia);
     }
 

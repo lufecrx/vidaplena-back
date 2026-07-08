@@ -8,6 +8,12 @@ import ifba.engsoft.vidaplena.domain.model.organizacao.Clinica;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Empresa;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Organizacao;
 import ifba.engsoft.vidaplena.domain.repository.organizacao.OrganizacaoRepository;
+import ifba.engsoft.vidaplena.domain.repository.familia.VinculoDependenciaRepository;
+import ifba.engsoft.vidaplena.domain.repository.UsuarioRepository;
+import ifba.engsoft.vidaplena.domain.repository.saude.ProfissionalRepository;
+import ifba.engsoft.vidaplena.domain.model.familia.VinculoDependencia;
+import ifba.engsoft.vidaplena.domain.model.saude.Profissional;
+import ifba.engsoft.vidaplena.domain.model.Usuario;
 import ifba.engsoft.vidaplena.domain.service.familia.RegraNegocioException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,12 +21,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrganizacaoService {
 
     @Autowired
     private OrganizacaoRepository organizacaoRepository;
+
+    @Autowired
+    private VinculoDependenciaRepository vinculoDependenciaRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ProfissionalRepository profissionalRepository;
     /**
      * Cria uma nova empresa com o CNPJ e setor informados.
      * Valida se o CNPJ já não está em uso por outra organização.
@@ -176,11 +193,115 @@ public class OrganizacaoService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public ClinicaResponseDTO buscarClinicaPorId(UUID id) {
+        Organizacao org = organizacaoRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Clínica com ID " + id + " não encontrada."));
+        
+        if (!(org instanceof Clinica clinica)) {
+            throw new RegraNegocioException("Organização com ID " + id + " não é uma clínica.");
+        }
+
+        validarVinculoRepresentante(id, "clínica");
+
+        return new ClinicaResponseDTO(
+                clinica.getId(),
+                clinica.getNome(),
+                clinica.getCnpj(),
+                clinica.getTipo()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public EmpresaResponseDTO buscarEmpresaPorId(UUID id) {
+        Organizacao org = organizacaoRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Empresa com ID " + id + " não encontrada."));
+        
+        if (!(org instanceof Empresa empresa)) {
+            throw new RegraNegocioException("Organização com ID " + id + " não é uma empresa.");
+        }
+
+        validarVinculoRepresentante(id, "empresa");
+
+        return new EmpresaResponseDTO(
+                empresa.getId(),
+                empresa.getNome(),
+                empresa.getCnpj(),
+                empresa.getSetor()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClinicaResponseDTO> listarClinicas() {
+        return organizacaoRepository.findAll().stream()
+                .filter(org -> org instanceof Clinica)
+                .map(org -> {
+                    Clinica clinica = (Clinica) org;
+                    return new ClinicaResponseDTO(
+                            clinica.getId(),
+                            clinica.getNome(),
+                            clinica.getCnpj(),
+                            clinica.getTipo()
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmpresaResponseDTO> listarEmpresas() {
+        return organizacaoRepository.findAll().stream()
+                .filter(org -> org instanceof Empresa)
+                .map(org -> {
+                    Empresa empresa = (Empresa) org;
+                    return new EmpresaResponseDTO(
+                            empresa.getId(),
+                            empresa.getNome(),
+                            empresa.getCnpj(),
+                            empresa.getSetor()
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void validarVinculoRepresentante(UUID orgId, String tipoOrg) {
+        org.springframework.security.core.Authentication authentication = 
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            String email = authentication.getName();
+            Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email).orElse(null);
+            if (usuario != null) {
+                boolean isAdm = usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.ADMINISTRADOR);
+                boolean isRepresentante = usuario.possuiTipo(ifba.engsoft.vidaplena.domain.model.TipoUsuario.REPRESENTANTE_EMPRESA);
+                
+                if (!isAdm && isRepresentante) {
+                    if ("clínica".equals(tipoOrg)) {
+                        if (usuario.getClinica() == null || !usuario.getClinica().getId().equals(orgId)) {
+                            throw new org.springframework.security.access.AccessDeniedException(
+                                    "Usuário representante não está vinculado a esta clínica."
+                            );
+                        }
+                    } else if ("empresa".equals(tipoOrg)) {
+                        if (usuario.getEmpresa() == null || !usuario.getEmpresa().getId().equals(orgId)) {
+                            throw new org.springframework.security.access.AccessDeniedException(
+                                    "Usuário representante não está vinculado a esta empresa."
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Conta o número de vínculos de dependência ativos envolvendo uma organização.
      */
     private long contarVinculosAtivosPorOrganizacaoId(UUID organizacaoId) {
-        // TODO: Implementar a lógica para contar vínculos de dependência ativos envolvendo a organização.
+        Organizacao org = organizacaoRepository.findById(organizacaoId).orElse(null);
+        if (org instanceof Empresa) {
+            return vinculoDependenciaRepository.countActiveVinculosByEmpresaId(organizacaoId);
+        } else if (org instanceof Clinica) {
+            return vinculoDependenciaRepository.countActiveVinculosByClinicaId(organizacaoId);
+        }
         return 0; 
     }
 
@@ -188,7 +309,12 @@ public class OrganizacaoService {
      * Conta o número de membros/funcionários vinculados a uma organização.
      */
     private int contarMembrosVinculados(UUID organizacaoId) {
-        // TODO: Implementar a lógica para contar membros/funcionários vinculados à organização.
+        Organizacao org = organizacaoRepository.findById(organizacaoId).orElse(null);
+        if (org instanceof Empresa) {
+            return (int) usuarioRepository.countByEmpresaId(organizacaoId);
+        } else if (org instanceof Clinica) {
+            return (int) profissionalRepository.countByClinicaId(organizacaoId);
+        }
         return 0;
     }
 
@@ -196,14 +322,41 @@ public class OrganizacaoService {
      * Inativa todos os vínculos de dependência associados a uma organização.
      */
     private void inativarVinculosDaOrganizacao(UUID organizacaoId) {
-        // TODO: Implementar a lógica para inativar todos os vínculos de dependência associados à organização.
+        Organizacao org = organizacaoRepository.findById(organizacaoId).orElse(null);
+        List<VinculoDependencia> vinculos = List.of();
+        if (org instanceof Empresa) {
+            vinculos = vinculoDependenciaRepository.findActiveVinculosByEmpresaId(organizacaoId);
+        } else if (org instanceof Clinica) {
+            vinculos = vinculoDependenciaRepository.findActiveVinculosByClinicaId(organizacaoId);
+        }
+        for (VinculoDependencia v : vinculos) {
+            v.setDataFim(java.time.LocalDate.now());
+            vinculoDependenciaRepository.save(v);
+        }
     }
 
     /**
      * Remove todos os membros vinculados a uma organização.
      */
     private void removerMembrosVinculados(UUID organizacaoId) {
-        // TODO: Implementar a lógica para remover membros vinculados à organização.
+        Organizacao org = organizacaoRepository.findById(organizacaoId).orElse(null);
+        if (org instanceof Empresa) {
+            List<Usuario> usuarios = usuarioRepository.findByEmpresaId(organizacaoId);
+            for (Usuario u : usuarios) {
+                u.setEmpresa(null);
+                usuarioRepository.save(u);
+            }
+        } else if (org instanceof Clinica) {
+            List<Profissional> profissionais = profissionalRepository.findByClinicaId(organizacaoId);
+            for (Profissional p : profissionais) {
+                profissionalRepository.delete(p);
+            }
+            List<Usuario> usuariosClinica = usuarioRepository.findByClinicaId(organizacaoId);
+            for (Usuario u : usuariosClinica) {
+                u.setClinica(null);
+                usuarioRepository.save(u);
+            }
+        }
     }
 
     /**

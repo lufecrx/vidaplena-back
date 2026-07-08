@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/empresas")
@@ -41,8 +42,8 @@ public class EmpresaController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA')")
     public ResponseEntity<EmpresaResponseDTO> buscarEmpresaPorId(@PathVariable UUID id) {
-        // TODO: No Service, validar se o usuário logado é REPRESENTANTE_EMPRESA vinculado à empresa
-        return new ResponseEntity<>(HttpStatus.OK);
+        EmpresaResponseDTO empresa = organizacaoService.buscarEmpresaPorId(id);
+        return new ResponseEntity<>(empresa, HttpStatus.OK);
     }
 
     /**
@@ -51,8 +52,8 @@ public class EmpresaController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA')")
-    public ResponseEntity<Void> listarEmpresas() {
-        // TODO: Implementar a lógica para listar todas as empresas
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<List<EmpresaResponseDTO>> listarEmpresas() {
+        List<EmpresaResponseDTO> empresas = organizacaoService.listarEmpresas();
+        return new ResponseEntity<>(empresas, HttpStatus.OK);
     }
 }

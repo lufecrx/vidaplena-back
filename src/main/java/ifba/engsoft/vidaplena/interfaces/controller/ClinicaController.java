@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/clinicas")
@@ -41,8 +42,8 @@ public class ClinicaController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA')")
     public ResponseEntity<ClinicaResponseDTO> buscarClinicaPorId(@PathVariable UUID id) {
-        // TODO: No Service, validar se o usuário logado é REPRESENTANTE_EMPRESA vinculado à clínica
-        return new ResponseEntity<>(HttpStatus.OK);
+        ClinicaResponseDTO clinica = organizacaoService.buscarClinicaPorId(id);
+        return new ResponseEntity<>(clinica, HttpStatus.OK);
     }
 
     /**
@@ -51,8 +52,8 @@ public class ClinicaController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA')")
-    public ResponseEntity<Void> listarClinicas() {
-        // TODO: Implementar a lógica para listar todas as clínicas
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<List<ClinicaResponseDTO>> listarClinicas() {
+        List<ClinicaResponseDTO> clinicas = organizacaoService.listarClinicas();
+        return new ResponseEntity<>(clinicas, HttpStatus.OK);
     }
 }

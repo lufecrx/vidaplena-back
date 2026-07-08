@@ -26,7 +26,7 @@ public class VinculoDependenciaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removerVinculo(@PathVariable UUID id) {
-        // TODO: Implementar a lógica para remover ou inativar um vínculo de dependência por ID
+        vinculoDependenciaService.inativarVinculo(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

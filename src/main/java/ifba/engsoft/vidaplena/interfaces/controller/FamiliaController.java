@@ -42,8 +42,7 @@ public class FamiliaController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'CUIDADOR', 'FUNCIONARIO_ADMINISTRATIVO', 'RESPONSAVEL', 'PACIENTE')")
     public ResponseEntity<FamiliaResponseDTO> buscarFamiliaPorId(@PathVariable UUID id) {
-        // TODO: No Service, validar se o usuário logado pertence à família (para roles PACIENTE/RESPONSAVEL)
-        //       ou possui autorização profissional para acessar os dados.
-        return new ResponseEntity<>(HttpStatus.OK);
+        FamiliaResponseDTO familia = familiaService.buscarFamilia(id);
+        return new ResponseEntity<>(familia, HttpStatus.OK);
     }
 }
