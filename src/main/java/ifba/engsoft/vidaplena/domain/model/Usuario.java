@@ -19,11 +19,19 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Clinica;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Empresa;
 
 @Entity
 @Table(name = "usuarios")
+@AttributeOverrides({
+    @AttributeOverride(name = "criadoPor", column = @Column(name = "criado_por_audit", updatable = false, nullable = false, length = 100)),
+    @AttributeOverride(name = "dataCriacao", column = @Column(name = "data_criacao_audit", updatable = false, nullable = false)),
+    @AttributeOverride(name = "modificadoPor", column = @Column(name = "modificado_por_audit", length = 100)),
+    @AttributeOverride(name = "dataModificacao", column = @Column(name = "data_modificacao_audit"))
+})
 public class Usuario extends EntidadeAuditavel {
 
 	@Id

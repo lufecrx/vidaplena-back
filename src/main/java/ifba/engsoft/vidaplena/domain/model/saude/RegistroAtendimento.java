@@ -35,24 +35,19 @@ public class RegistroAtendimento extends EntidadeAuditavel {
     @Column(name = "data_registro", nullable = false)
     private LocalDateTime dataRegistro;
 
-    @Lob
-    @Column(name = "sintomas_relatados")
+    @Column(name = "sintomas_relatados", columnDefinition = "TEXT")
     private String sintomasRelatados;
 
-    @Lob
-    @Column(name = "diagnostico")
+    @Column(name = "diagnostico", columnDefinition = "TEXT")
     private String diagnostico;
 
-    @Lob
-    @Column(name = "prescricao_medica")
+    @Column(name = "prescricao_medica", columnDefinition = "TEXT")
     private String prescricaoMedica;
 
-    @Lob
-    @Column(name = "prescricao_enfermagem")
+    @Column(name = "prescricao_enfermagem", columnDefinition = "TEXT")
     private String prescricaoEnfermagem;
 
-    @Lob
-    @Column(name = "notas_clinicas")
+    @Column(name = "notas_clinicas", columnDefinition = "TEXT")
     private String notasClinicas;
 
     @Column(name = "finalizado", nullable = false)

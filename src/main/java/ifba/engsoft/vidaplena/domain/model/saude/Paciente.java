@@ -35,8 +35,7 @@ public class Paciente extends EntidadeAuditavel {
     @Column(name = "medicamento_continuo")
     private List<String> medicamentosContinuos;
 
-    @Lob
-    @Column(name = "historico_familiar")
+    @Column(name = "historico_familiar", length = 10000)
     @Size(max = 10000, message = "O histórico familiar não pode exceder 10000 caracteres")
     private String historicoFamiliar;
 

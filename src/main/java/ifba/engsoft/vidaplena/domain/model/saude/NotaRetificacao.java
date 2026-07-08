@@ -29,8 +29,7 @@ public class NotaRetificacao extends EntidadeAuditavel {
     private LocalDateTime dataRegistro;
 
     @NotNull(message = "O texto de retificação é obrigatório")
-    @Lob
-    @Column(name = "texto", nullable = false)
+    @Column(name = "texto", nullable = false, columnDefinition = "TEXT")
     private String texto;
 
     // Construtores

@@ -1,0 +1,102 @@
+# VidaPlena - Configurações de Produção
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  servlet:
+    context-path: ${SERVER_CONTEXT_PATH:/}
+
+spring:
+  application:
+    name: vidaplena
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db:5432/vidaplena}
+    username: ${SPRING_DATASOURCE_USERNAME:vidaplena}
+    password: ${SPRING_DATASOURCE_PASSWORD:vidaplena_secure_password_2026}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAX_POOL_SIZE:20}
+      minimum-idle: ${SPRING_DATASOURCE_HIKARI_MIN_IDLE:5}
+      idle-timeout: ${SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT:300000}
+      connection-timeout: ${SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT:20000}
+      max-lifetime: ${SPRING_DATASOURCE_HIKARI_MAX_LIFETIME:1800000}
+      pool-name: VidaPlenaHikariCP
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        use_sql_comments: false
+        jdbc:
+          batch_size: ${SPRING_JPA_BATCH_SIZE:50}
+          order_inserts: true
+          order_updates: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    out-of-order: false
+
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: false
+
+# Segurança, JWT e Serviços Customizados da Aplicação
+app:
+  security:
+    jwt:
+      secret: ${VIDAPLENA_JWT_SECRET:vidaplena-super-secret-production-key-for-jwt-signing-2026}
+      expiration: ${VIDAPLENA_JWT_EXPIRATION:PT2H}
+  mail:
+    enabled: ${VIDAPLENA_MAIL_ENABLED:false}
+
+# Desabilitar Swagger/OpenAPI em Produção por segurança
+springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${SPRINGDOC_SWAGGER_UI_ENABLED:false}
+
+logging:
+  level:
+    root: INFO
+    ifba.engsoft.vidaplena: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

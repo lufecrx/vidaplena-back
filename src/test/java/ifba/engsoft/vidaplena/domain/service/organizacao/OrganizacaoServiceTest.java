@@ -9,8 +9,6 @@ import ifba.engsoft.vidaplena.domain.model.StatusUsuario;
 import ifba.engsoft.vidaplena.domain.model.TipoUsuario;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Clinica;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Empresa;
-import ifba.engsoft.vidaplena.domain.model.organizacao.Organizacao;
-import ifba.engsoft.vidaplena.domain.model.saude.Profissional;
 import ifba.engsoft.vidaplena.domain.model.familia.VinculoDependencia;
 import ifba.engsoft.vidaplena.domain.repository.UsuarioRepository;
 import ifba.engsoft.vidaplena.domain.repository.organizacao.OrganizacaoRepository;
