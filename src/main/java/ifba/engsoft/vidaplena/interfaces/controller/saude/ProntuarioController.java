@@ -9,6 +9,16 @@ import ifba.engsoft.vidaplena.domain.model.saude.Paciente;
 import ifba.engsoft.vidaplena.domain.model.saude.RegistroAtendimento;
 import ifba.engsoft.vidaplena.domain.model.saude.NotaRetificacao;
 import ifba.engsoft.vidaplena.domain.service.saude.ProntuarioService;
+import ifba.engsoft.vidaplena.infrastructure.exception.ApiErrorResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,11 +33,38 @@ import java.util.UUID;
 @RequestMapping("/api/prontuarios")
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
+@Tag(name = "Prontuários", description = "Acesso a prontuários eletrônicos de pacientes e histórico clínico integrado")
+@SecurityRequirement(name = "bearerAuth")
 public class ProntuarioController {
 
     @Autowired
     private ProntuarioService prontuarioService;
 
+    @Operation(
+            summary = "Criar prontuário eletrônico",
+            description = "Cria um novo prontuário clínico para o paciente informado. Acesso restrito a profissionais de saúde e administradores.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Prontuário criado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProntuarioResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados inválidos ou pacienteId ausente",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado - Requer perfil clínico ou administrador",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
     @PostMapping
     public ResponseEntity<ProntuarioResponseDTO> criarProntuario(@Valid @RequestBody ProntuarioDTO prontuarioDTO) {
         Prontuario prontuario = new Prontuario();
@@ -41,20 +78,101 @@ public class ProntuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponseDTO(novoProntuario));
     }
 
+    @Operation(
+            summary = "Obter prontuário por ID",
+            description = "Recupera o prontuário eletrônico completo, incluindo seus atendimentos registrados.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Prontuário localizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProntuarioResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Prontuário não encontrado para o ID informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<ProntuarioResponseDTO> obterProntuario(@PathVariable UUID id) {
+    public ResponseEntity<ProntuarioResponseDTO> obterProntuario(
+            @Parameter(description = "Identificador único (UUID) do prontuário", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+            @PathVariable UUID id) {
         Prontuario prontuario = prontuarioService.obterProntuarioPorId(id);
         return ResponseEntity.ok(mapToResponseDTO(prontuario));
     }
 
+    @Operation(
+            summary = "Obter prontuário pelo ID do paciente",
+            description = "Localiza o prontuário eletrônico vinculado diretamente ao UUID do paciente informado.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Prontuário do paciente retornado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProntuarioResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Prontuário não encontrado para o paciente informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
     @GetMapping("/paciente/{pacienteId}")
-    public ResponseEntity<ProntuarioResponseDTO> obterProntuarioPorPacienteId(@PathVariable UUID pacienteId) {
+    public ResponseEntity<ProntuarioResponseDTO> obterProntuarioPorPacienteId(
+            @Parameter(description = "Identificador único (UUID) do paciente", example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID pacienteId) {
         Prontuario prontuario = prontuarioService.obterProntuarioPorPacienteId(pacienteId);
         return ResponseEntity.ok(mapToResponseDTO(prontuario));
     }
 
+    @Operation(
+            summary = "Obter histórico clínico completo do paciente",
+            description = "Retorna a relação cronológica de todos os registros de atendimentos clínicos e evoluções do paciente.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Histórico clínico retornado com sucesso",
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RegistroAtendimentoResponseDTO.class)))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Paciente não encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
     @GetMapping("/paciente/{pacienteId}/historico")
-    public ResponseEntity<List<RegistroAtendimentoResponseDTO>> obterHistoricoClinicoPaciente(@PathVariable UUID pacienteId) {
+    public ResponseEntity<List<RegistroAtendimentoResponseDTO>> obterHistoricoClinicoPaciente(
+            @Parameter(description = "Identificador único (UUID) do paciente", example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID pacienteId) {
         List<RegistroAtendimento> registros = prontuarioService.obterHistoricoClinicoPaciente(pacienteId);
         List<RegistroAtendimentoResponseDTO> response = registros.stream()
                 .map(this::mapToRegistroResponseDTO)

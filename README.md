@@ -72,7 +72,7 @@ O controle de acesso é realizado de forma **stateless** utilizando **tokens JWT
 A API VidaPlena utiliza o **Springdoc OpenAPI** para gerar de forma automatizada a especificação dos endpoints e fornecer uma interface gráfica interativa para testes rápidos de integração.
 
 ### URLs de Acesso (Ambiente Local)
-*   **Swagger UI (Interface Gráfica):** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) (ou [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) que redirecionará automaticamente).
+*   **Swagger UI (Interface Gráfica):** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 *   **Documentação OpenAPI (JSON):** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 ### Configuração em Produção
