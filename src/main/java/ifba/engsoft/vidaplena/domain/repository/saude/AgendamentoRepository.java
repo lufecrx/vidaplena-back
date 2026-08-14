@@ -8,34 +8,42 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface AgendamentoRepository extends JpaRepository<Agendamento, UUID> {
 
     /**
-     * Verifica choque de horário para um profissional.
-     *
-     * A lógica de verificação é:
-     * (inicio_existente < :fim_proposto AND fim_existente > :inicio_proposto)
-     *
-     * Esta query garante que:
-     * 1. Não há conflito quando uma consulta começa exatamente no momento em que outra termina
-     * 2. Considera apenas agendamentos com status diferente de CANCELADO
-     * 3. Detecta todos os casos de sobreposição de horários
+     * Busca agendamentos associados a um profissional ordenados por data/hora asc.
      *
      * @param profissionalId ID do profissional
-     * @param fimProposto Data/hora de término do agendamento proposto
-     * @param inicioProposto Data/hora de início do agendamento proposto
-     * @param statusCancelado Status que representa um agendamento cancelado
-     * @return Lista de agendamentos conflitantes
+     * @return Lista de agendamentos do profissional ordenados cronologicamente
+     */
+    List<Agendamento> findByProfissionalIdOrderByDataHoraAsc(UUID profissionalId);
+
+    /**
+     * Verifica a existência de choque de horário ativo para o profissional na data/hora informada.
+     *
+     * @param profissionalId ID do profissional
+     * @param dataHora Data e hora da consulta proposta
+     * @param status Status a ser desconsiderado (ex: CANCELADO)
+     * @return true se já existir agendamento ativo no mesmo horário, false caso contrário
+     */
+    boolean existsByProfissionalIdAndDataHoraAndStatusNot(
+            UUID profissionalId,
+            LocalDateTime dataHora,
+            StatusAgendamento status
+    );
+
+    /**
+     * Verifica choque de horário para um profissional com intervalo início e fim.
      */
     @Query("SELECT a FROM Agendamento a WHERE " +
            "a.profissional.id = :profissionalId AND " +
            "a.status != :statusCancelado AND " +
-           "a.dataHoraInicio < :fimProposto AND " +
-           "a.dataHoraFim > :inicioProposto")
+           "((a.dataHoraInicio IS NOT NULL AND a.dataHoraInicio < :fimProposto AND a.dataHoraFim > :inicioProposto) OR " +
+           "(a.dataHora IS NOT NULL AND a.dataHora = :inicioProposto))")
     List<Agendamento> verificarChoqueHorario(
             @Param("profissionalId") UUID profissionalId,
             @Param("fimProposto") LocalDateTime fimProposto,
