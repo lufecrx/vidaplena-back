@@ -16,6 +16,16 @@ public interface FamiliaRepository extends JpaRepository<Familia, UUID> {
     boolean existsById(UUID familiaId);
 
     /**
+     * Busca uma família pelo nome.
+     */
+    Optional<Familia> findByNome(String nome);
+
+    /**
+     * Verifica se uma família existe pelo nome.
+     */
+    boolean existsByNome(String nome);
+
+    /**
      * Busca famílias ativas (sem inativação) que possuem membros com vínculos de dependência ativos.
      */
     @Query("SELECT f FROM Familia f JOIN f.membros m LEFT JOIN VinculoDependencia v ON (v.responsavel = m OR v.dependente = m) AND v.dataFim IS NULL WHERE f.id = :familiaId")

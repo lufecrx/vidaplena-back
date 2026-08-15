@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "registros_atendimento")
 public class RegistroAtendimento extends EntidadeAuditavel {
@@ -19,16 +22,19 @@ public class RegistroAtendimento extends EntidadeAuditavel {
     @NotNull(message = "O prontuário é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prontuario_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Prontuario prontuario;
 
     @NotNull(message = "O profissional é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profissional_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Profissional profissional;
 
     @NotNull(message = "O agendamento é obrigatório")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "agendamento_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Agendamento agendamento;
 
     @NotNull(message = "A data de registro é obrigatória")

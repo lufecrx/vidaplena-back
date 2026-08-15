@@ -63,6 +63,7 @@ public class Usuario extends EntidadeAuditavel {
 	@CollectionTable(name = "usuario_tipos", joinColumns = @JoinColumn(name = "usuario_id"))
 	@Column(name = "tipo_usuario", nullable = false)
 	@Enumerated(EnumType.STRING)
+	@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
 	private Set<TipoUsuario> tipos = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)

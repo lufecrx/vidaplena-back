@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "profissionais")
 public class Profissional extends EntidadeAuditavel {
@@ -17,6 +20,7 @@ public class Profissional extends EntidadeAuditavel {
     @NotNull(message = "O ID do usuário é obrigatório")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Usuario usuario;
 
     @Column(name = "registro_conselho", unique = true)

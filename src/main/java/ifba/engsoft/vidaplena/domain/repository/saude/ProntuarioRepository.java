@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface ProntuarioRepository extends JpaRepository<Prontuario, UUID> {
     
     Prontuario findByPacienteId(UUID pacienteId);
+
+    boolean existsByPacienteId(UUID pacienteId);
 }

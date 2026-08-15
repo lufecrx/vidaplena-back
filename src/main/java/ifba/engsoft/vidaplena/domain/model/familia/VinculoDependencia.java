@@ -4,6 +4,8 @@ import ifba.engsoft.vidaplena.domain.model.Usuario;
 import ifba.engsoft.vidaplena.infrastructure.auditing.EntidadeAuditavel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -29,10 +31,12 @@ public class VinculoDependencia extends EntidadeAuditavel {
 
     @ManyToOne
     @JoinColumn(name = "responsavel_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Usuario responsavel;
 
     @ManyToOne
     @JoinColumn(name = "dependente_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Usuario dependente;
 
     // Construtores

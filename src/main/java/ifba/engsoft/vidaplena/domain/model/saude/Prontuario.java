@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "prontuarios")
 public class Prontuario extends EntidadeAuditavel {
@@ -18,6 +21,7 @@ public class Prontuario extends EntidadeAuditavel {
     @NotNull(message = "O ID do paciente é obrigatório")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paciente_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Paciente paciente;
 
     @Column(name = "observacoes_gerais", length = 2000)

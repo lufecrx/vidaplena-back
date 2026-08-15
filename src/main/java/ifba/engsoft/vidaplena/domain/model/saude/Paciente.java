@@ -8,6 +8,9 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "pacientes")
 public class Paciente extends EntidadeAuditavel {
@@ -19,6 +22,7 @@ public class Paciente extends EntidadeAuditavel {
     @NotNull(message = "O ID do usuário é obrigatório")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Usuario usuario;
 
     @Enumerated(EnumType.STRING)
@@ -28,11 +32,13 @@ public class Paciente extends EntidadeAuditavel {
     @ElementCollection
     @CollectionTable(name = "paciente_alergias", joinColumns = @JoinColumn(name = "paciente_id"))
     @Column(name = "alergia")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<String> alergias;
 
     @ElementCollection
     @CollectionTable(name = "paciente_medicamentos_continuos", joinColumns = @JoinColumn(name = "paciente_id"))
     @Column(name = "medicamento_continuo")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<String> medicamentosContinuos;
 
     @Column(name = "historico_familiar", length = 10000)

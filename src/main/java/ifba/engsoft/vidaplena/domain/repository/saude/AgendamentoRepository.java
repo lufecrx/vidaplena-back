@@ -49,4 +49,10 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, UUID> 
             @Param("fimProposto") LocalDateTime fimProposto,
             @Param("inicioProposto") LocalDateTime inicioProposto,
             @Param("statusCancelado") StatusAgendamento statusCancelado);
+
+    List<Agendamento> findByPacienteId(UUID pacienteId);
+
+    boolean existsByPacienteIdAndProfissionalIdAndDataHora(UUID pacienteId, UUID profissionalId, LocalDateTime dataHora);
+
+    boolean existsByPacienteIdAndProfissionalIdAndDataHoraInicio(UUID pacienteId, UUID profissionalId, LocalDateTime dataHoraInicio);
 }

@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "notas_retificacao")
 public class NotaRetificacao extends EntidadeAuditavel {
@@ -17,11 +20,13 @@ public class NotaRetificacao extends EntidadeAuditavel {
     @NotNull(message = "O registro de atendimento é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registro_atendimento_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private RegistroAtendimento registroAtendimento;
 
     @NotNull(message = "O profissional é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profissional_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Profissional profissional;
 
     @NotNull(message = "A data de registro é obrigatória")

@@ -4,6 +4,8 @@ import ifba.engsoft.vidaplena.domain.model.Usuario;
 import ifba.engsoft.vidaplena.infrastructure.auditing.EntidadeAuditavel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,8 +24,8 @@ public class Familia extends EntidadeAuditavel {
     @ManyToMany
     @JoinTable(
         name = "familia_usuarios",
-        joinColumns = @JoinColumn(name = "familia_id"),
-        inverseJoinColumns = @JoinColumn(name = "usuario_id")
+        joinColumns = @JoinColumn(name = "familia_id", foreignKey = @ForeignKey(foreignKeyDefinition = "FOREIGN KEY (familia_id) REFERENCES familias (id) ON DELETE CASCADE")),
+        inverseJoinColumns = @JoinColumn(name = "usuario_id", foreignKey = @ForeignKey(foreignKeyDefinition = "FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE"))
     )
     private List<Usuario> membros;
 
