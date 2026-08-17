@@ -449,6 +449,21 @@ class UsuarioControllerSecurityTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    /**
+     * Cenário de Falha: Parâmetro de ordenação inválido (campo inexistente na entidade).
+     */
+    @Test
+    @DisplayName("Deve retornar HTTP 400 Bad Request ao listar com campo de ordenação inexistente")
+    void deveRetornarBadRequestAoListarComCampoOrdenacaoInvalido() throws Exception {
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        mockMvc.perform(get("/api/v1/usuarios?sort=campoInexistente,asc")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Parâmetro ou campo de ordenação inválido"));
+    }
+
     private record AlterarStatusUsuarioRequest(StatusUsuario status) {
     }
 

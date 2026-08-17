@@ -3,6 +3,8 @@ package ifba.engsoft.vidaplena.infrastructure.exception;
 import java.time.Instant;
 import java.util.List;
 
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -143,6 +145,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				"Requisição inválida",
 				request.getDescription(false).replace("uri=", ""),
 				List.of(ex.getMostSpecificCause().getMessage())));
+	}
+
+	/**
+	 * Trata exceções de parâmetros de ordenação ou paginação inválidos.
+	 * Retorna HTTP 400 Bad Request.
+	 * 
+	 * @param ex exceção de parâmetro inválido
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP 400
+	 */
+	@ExceptionHandler({
+			PropertyReferenceException.class,
+			InvalidDataAccessApiUsageException.class,
+			IllegalArgumentException.class
+	})
+	public ResponseEntity<ApiErrorResponse> handleInvalidQueryParameters(RuntimeException ex, WebRequest request) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(
+				Instant.now(),
+				HttpStatus.BAD_REQUEST.value(),
+				HttpStatus.BAD_REQUEST.getReasonPhrase(),
+				"Parâmetro ou campo de ordenação inválido",
+				request.getDescription(false).replace("uri=", ""),
+				List.of(ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName())));
 	}
 
 	/**

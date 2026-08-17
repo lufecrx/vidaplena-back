@@ -3,6 +3,7 @@ package ifba.engsoft.vidaplena.interfaces.controller;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -108,7 +109,7 @@ public class UsuarioController {
 	@GetMapping
 	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<Page<UsuarioResponse>> listar(
-			@PageableDefault(size = 20, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+			@ParameterObject @PageableDefault(size = 20, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
 		Page<UsuarioResponse> response = usuarioService.listarUsuarios(pageable);
 		return ResponseEntity.ok(response);
 	}
