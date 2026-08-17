@@ -464,6 +464,123 @@ class UsuarioControllerSecurityTest {
                 .andExpect(jsonPath("$.message").value("Parâmetro ou campo de ordenação inválido"));
     }
 
+    /**
+     * Cenário de Sucesso: Administrador busca usuário por e-mail.
+     */
+    @Test
+    @DisplayName("Deve permitir que ADMINISTRADOR busque usuário por e-mail (HTTP 200)")
+    void devePermitirAdministradorBuscarUsuarioPorEmail() throws Exception {
+        usuarioRepository.save(new Usuario(
+                "Maria Buscada",
+                "12312312312",
+                "maria.buscada@example.com",
+                passwordEncoder.encode("Senha@123"),
+                "71988887777",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.PACIENTE)));
+
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        mockMvc.perform(get("/api/v1/usuarios/email/maria.buscada@example.com")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Maria Buscada"))
+                .andExpect(jsonPath("$.email").value("maria.buscada@example.com"))
+                .andExpect(jsonPath("$.cpf").value("12312312312"));
+    }
+
+    /**
+     * Cenário de Falha: Paciente tenta buscar usuário por e-mail.
+     */
+    @Test
+    @DisplayName("Deve negar a PACIENTE tentar buscar usuário por e-mail (HTTP 403)")
+    void deveNegarAcessoPacienteBuscarUsuarioPorEmail() throws Exception {
+        String pacienteToken = testJwtTokenProvider.generatePacienteTestToken("paciente.busca@example.com");
+
+        mockMvc.perform(get("/api/v1/usuarios/email/admin.seguranca@example.com")
+                        .header("Authorization", "Bearer " + pacienteToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * Cenário de Falha: Busca por e-mail inexistente retorna 404.
+     */
+    @Test
+    @DisplayName("Deve retornar HTTP 404 ao buscar por e-mail inexistente")
+    void deveRetornar404AoBuscarEmailInexistente() throws Exception {
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        mockMvc.perform(get("/api/v1/usuarios/email/naoexiste@example.com")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Cenário de Sucesso: Administrador busca usuário por CPF formatado ou sem pontuação.
+     */
+    @Test
+    @DisplayName("Deve permitir que ADMINISTRADOR busque usuário por CPF (HTTP 200)")
+    void devePermitirAdministradorBuscarUsuarioPorCpf() throws Exception {
+        usuarioRepository.save(new Usuario(
+                "Joao CPF",
+                "98765432100",
+                "joao.cpf@example.com",
+                passwordEncoder.encode("Senha@123"),
+                "71977776666",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.MEDICO)));
+
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        // Busca com formatação
+        mockMvc.perform(get("/api/v1/usuarios/cpf/987.654.321-00")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Joao CPF"))
+                .andExpect(jsonPath("$.email").value("joao.cpf@example.com"));
+
+        // Busca sem pontuação
+        mockMvc.perform(get("/api/v1/usuarios/cpf/98765432100")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Joao CPF"));
+    }
+
+    /**
+     * Cenário de Falha: Paciente tenta buscar usuário por CPF.
+     */
+    @Test
+    @DisplayName("Deve negar a PACIENTE tentar buscar usuário por CPF (HTTP 403)")
+    void deveNegarAcessoPacienteBuscarUsuarioPorCpf() throws Exception {
+        String pacienteToken = testJwtTokenProvider.generatePacienteTestToken("paciente.busca@example.com");
+
+        mockMvc.perform(get("/api/v1/usuarios/cpf/00000000000")
+                        .header("Authorization", "Bearer " + pacienteToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * Cenário de Falha: Busca por CPF inexistente retorna 404.
+     */
+    @Test
+    @DisplayName("Deve retornar HTTP 404 ao buscar por CPF inexistente")
+    void deveRetornar404AoBuscarCpfInexistente() throws Exception {
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        mockMvc.perform(get("/api/v1/usuarios/cpf/999.999.999-99")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
     private record AlterarStatusUsuarioRequest(StatusUsuario status) {
     }
 

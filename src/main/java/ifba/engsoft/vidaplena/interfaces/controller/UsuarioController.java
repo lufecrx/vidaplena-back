@@ -226,6 +226,82 @@ public class UsuarioController {
 	}
 
 	@Operation(
+			summary = "Buscar usuário por e-mail (Administrativo)",
+			description = "Permite a um administrador consultar os dados cadastrais de uma conta através do e-mail.")
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Usuário localizado com sucesso",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponse.class))),
+			@ApiResponse(
+					responseCode = "400",
+					description = "E-mail informado inválido",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Não autenticado / Token ausente ou inválido",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Acesso negado - Requer ROLE_ADMINISTRADOR",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Usuário não encontrado para o e-mail informado",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Erro interno do servidor",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+	})
+	@GetMapping("/email/{email}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	public ResponseEntity<UsuarioResponse> buscarPorEmail(
+			@Parameter(description = "E-mail cadastrado do usuário", example = "maria.silva@vidaplena.com.br")
+			@PathVariable String email) {
+		UsuarioResponse response = usuarioService.toResponse(usuarioService.buscarPorEmail(email));
+		return ResponseEntity.ok(response);
+	}
+
+	@Operation(
+			summary = "Buscar usuário por CPF (Administrativo)",
+			description = "Permite a um administrador consultar os dados cadastrais de uma conta através do CPF (formatado ou apenas dígitos).")
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Usuário localizado com sucesso",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponse.class))),
+			@ApiResponse(
+					responseCode = "400",
+					description = "CPF informado inválido",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Não autenticado / Token ausente ou inválido",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Acesso negado - Requer ROLE_ADMINISTRADOR",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Usuário não encontrado para o CPF informado",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Erro interno do servidor",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+	})
+	@GetMapping("/cpf/{cpf}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	public ResponseEntity<UsuarioResponse> buscarPorCpf(
+			@Parameter(description = "CPF cadastrado do usuário (apenas números ou formatado)", example = "12345678901")
+			@PathVariable String cpf) {
+		UsuarioResponse response = usuarioService.toResponse(usuarioService.buscarPorCpf(cpf));
+		return ResponseEntity.ok(response);
+	}
+
+	@Operation(
 			summary = "Consultar meu perfil",
 			description = "Retorna os dados cadastrais da conta do usuário autenticado no token JWT.")
 	@ApiResponses(value = {

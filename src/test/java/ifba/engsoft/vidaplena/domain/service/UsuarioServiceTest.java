@@ -127,4 +127,60 @@ class UsuarioServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.tipos()).containsExactlyInAnyOrder(TipoUsuario.MEDICO, TipoUsuario.PACIENTE);
     }
+
+    @Test
+    @DisplayName("Deve buscar usuário por e-mail com sucesso")
+    void deveBuscarUsuarioPorEmailComSucesso() {
+        when(usuarioRepository.findByEmailIgnoreCase("carlos.silva@example.com")).thenReturn(Optional.of(usuario));
+
+        Usuario resultado = usuarioService.buscarPorEmail("carlos.silva@example.com");
+
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getEmail()).isEqualTo("carlos.silva@example.com");
+        verify(usuarioRepository, times(1)).findByEmailIgnoreCase("carlos.silva@example.com");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao buscar usuário por e-mail inexistente")
+    void deveLancarExcecaoAoBuscarEmailInexistente() {
+        when(usuarioRepository.findByEmailIgnoreCase("inexistente@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> usuarioService.buscarPorEmail("inexistente@example.com"));
+        verify(usuarioRepository, times(1)).findByEmailIgnoreCase("inexistente@example.com");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao buscar usuário por e-mail vazio ou em branco")
+    void deveLancarExcecaoAoBuscarEmailVazio() {
+        assertThrows(ResponseStatusException.class, () -> usuarioService.buscarPorEmail("   "));
+        verify(usuarioRepository, never()).findByEmailIgnoreCase(any());
+    }
+
+    @Test
+    @DisplayName("Deve buscar usuário por CPF com sucesso mesmo com formatação")
+    void deveBuscarUsuarioPorCpfComSucesso() {
+        when(usuarioRepository.findByCpf("12345678901")).thenReturn(Optional.of(usuario));
+
+        Usuario resultado = usuarioService.buscarPorCpf("123.456.789-01");
+
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getCpf()).isEqualTo("12345678901");
+        verify(usuarioRepository, times(1)).findByCpf("12345678901");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao buscar usuário por CPF inexistente")
+    void deveLancarExcecaoAoBuscarCpfInexistente() {
+        when(usuarioRepository.findByCpf("99999999999")).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> usuarioService.buscarPorCpf("999.999.999-99"));
+        verify(usuarioRepository, times(1)).findByCpf("99999999999");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao buscar usuário por CPF vazio ou inválido")
+    void deveLancarExcecaoAoBuscarCpfVazio() {
+        assertThrows(ResponseStatusException.class, () -> usuarioService.buscarPorCpf("   "));
+        verify(usuarioRepository, never()).findByCpf(any());
+    }
 }

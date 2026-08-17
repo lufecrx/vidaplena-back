@@ -82,7 +82,21 @@ public class UsuarioService {
 
 	@Transactional(readOnly = true)
 	public Usuario buscarPorEmail(String email) {
-		return usuarioRepository.findByEmailIgnoreCase(normalizarEmail(email))
+		String emailNormalizado = normalizarEmail(email);
+		if (emailNormalizado == null || emailNormalizado.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail informado é inválido");
+		}
+		return usuarioRepository.findByEmailIgnoreCase(emailNormalizado)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+	}
+
+	@Transactional(readOnly = true)
+	public Usuario buscarPorCpf(String cpf) {
+		String cpfNormalizado = normalizarCpf(cpf);
+		if (cpfNormalizado == null || cpfNormalizado.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF informado é inválido");
+		}
+		return usuarioRepository.findByCpf(cpfNormalizado)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 	}
 
