@@ -74,7 +74,10 @@ public class UsuarioController {
 	@PostMapping
 	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody CadastroUsuarioRequest request) {
-		UsuarioResponse response = usuarioService.criarUsuario(request, Set.of(TipoUsuario.PACIENTE), StatusUsuario.ATIVO);
+		Set<TipoUsuario> tipos = (request.tipos() != null && !request.tipos().isEmpty())
+				? request.tipos()
+				: Set.of(TipoUsuario.PACIENTE);
+		UsuarioResponse response = usuarioService.criarUsuario(request, tipos, StatusUsuario.ATIVO);
 		return ResponseEntity.status(201).body(response);
 	}
 

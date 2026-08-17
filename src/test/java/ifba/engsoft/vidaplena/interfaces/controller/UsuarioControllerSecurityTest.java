@@ -293,7 +293,31 @@ class UsuarioControllerSecurityTest {
                         .content(requestJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value("novo.paciente@example.com"))
-                .andExpect(jsonPath("$.status").value("ATIVO"));
+                .andExpect(jsonPath("$.status").value("ATIVO"))
+                .andExpect(jsonPath("$.tipos[0]").value("PACIENTE"));
+    }
+
+    @Test
+    @DisplayName("Deve permitir que ADMINISTRADOR cadastre um usuário com papéis específicos em rota única atômica (HTTP 201)")
+    @WithMockUser(roles = "ADMINISTRADOR")
+    void devePermitirAdministradorCadastrarUsuarioComPapeisEspecificos() throws Exception {
+        String requestJson = objectMapper.writeValueAsString(new CadastroUsuarioRequest(
+                "Dr. Carlos Medico",
+                "88888888888",
+                "dr.carlos@example.com",
+                "Medico@123",
+                "71988888888",
+                LocalDate.of(1985, 3, 10),
+                Set.of(TipoUsuario.MEDICO, TipoUsuario.PACIENTE)));
+
+        mockMvc.perform(post("/api/v1/usuarios")
+                        .header("Authorization", "Bearer fake-jwt-token-for-testing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value("dr.carlos@example.com"))
+                .andExpect(jsonPath("$.status").value("ATIVO"))
+                .andExpect(jsonPath("$.tipos", org.hamcrest.Matchers.containsInAnyOrder("MEDICO", "PACIENTE")));
     }
 
     /**

@@ -2,10 +2,13 @@ package ifba.engsoft.vidaplena.interfaces.dto.usuario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
+import java.util.Set;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import ifba.engsoft.vidaplena.domain.model.TipoUsuario;
 
 @Schema(description = "Dados para cadastro de novo usuário")
 public record CadastroUsuarioRequest(
@@ -25,5 +28,12 @@ public record CadastroUsuarioRequest(
 		String telefone,
 
 		@Schema(description = "Data de nascimento do usuário no formato ISO (AAAA-MM-DD)", example = "1990-05-15")
-		LocalDate dataNascimento) {
+		LocalDate dataNascimento,
+
+		@Schema(description = "Conjunto de papéis/perfis atribuídos ao usuário na criação administrativa (opcional, padrão PACIENTE)", example = "[\"MEDICO\", \"PACIENTE\"]")
+		Set<TipoUsuario> tipos) {
+
+	public CadastroUsuarioRequest(String nome, String cpf, String email, String senha, String telefone, LocalDate dataNascimento) {
+		this(nome, cpf, email, senha, telefone, dataNascimento, null);
+	}
 }
