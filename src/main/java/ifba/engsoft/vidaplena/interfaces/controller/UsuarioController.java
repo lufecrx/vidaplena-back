@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -364,6 +365,39 @@ public class UsuarioController {
 		
 		UsuarioResponse response = usuarioService.toResponse(usuarioService.buscarPorEmail(email));
 		return ResponseEntity.ok(response);
+	}
+
+	@Operation(
+			summary = "Remover usuário (Administrativo)",
+			description = "Remove permanentemente a conta de um usuário da plataforma. Acesso restrito a administradores.")
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "204",
+					description = "Usuário removido com sucesso"),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Não autenticado / Token ausente ou inválido",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Acesso negado - Requer ROLE_ADMINISTRADOR",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Usuário não encontrado para o ID informado",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Erro interno do servidor",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+	})
+	@DeleteMapping("/{usuarioId}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	public ResponseEntity<Void> remover(
+			@Parameter(description = "Identificador único (UUID) do usuário a ser removido", example = "550e8400-e29b-41d4-a716-446655440000")
+			@PathVariable UUID usuarioId) {
+		usuarioService.deletarUsuario(usuarioId);
+		return ResponseEntity.noContent().build();
 	}
 }
 

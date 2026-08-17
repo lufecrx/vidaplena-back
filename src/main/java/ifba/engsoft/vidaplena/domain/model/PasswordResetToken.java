@@ -3,6 +3,9 @@ package ifba.engsoft.vidaplena.domain.model;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,6 +26,7 @@ public class PasswordResetToken {
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "usuario_id", nullable = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Usuario usuario;
 
 	@Column(name = "token_hash", nullable = false, unique = true, length = 128)

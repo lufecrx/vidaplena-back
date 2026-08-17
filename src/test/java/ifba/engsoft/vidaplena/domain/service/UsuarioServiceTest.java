@@ -183,4 +183,27 @@ class UsuarioServiceTest {
         assertThrows(ResponseStatusException.class, () -> usuarioService.buscarPorCpf("   "));
         verify(usuarioRepository, never()).findByCpf(any());
     }
+
+    @Test
+    @DisplayName("Deve deletar usuário com sucesso")
+    void deveDeletarUsuarioComSucesso() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+
+        usuarioService.deletarUsuario(usuarioId);
+
+        verify(usuarioRepository, times(1)).findById(usuarioId);
+        verify(usuarioRepository, times(1)).delete(usuario);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar deletar usuário inexistente")
+    void deveLancarExcecaoAoTentarDeletarUsuarioInexistente() {
+        UUID inexistenteId = UUID.randomUUID();
+        when(usuarioRepository.findById(inexistenteId)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> usuarioService.deletarUsuario(inexistenteId));
+
+        verify(usuarioRepository, times(1)).findById(inexistenteId);
+        verify(usuarioRepository, never()).delete(any());
+    }
 }

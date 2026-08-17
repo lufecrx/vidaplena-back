@@ -581,6 +581,83 @@ class UsuarioControllerSecurityTest {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Cenário de Sucesso: Administrador remove um usuário com sucesso (HTTP 204).
+     */
+    @Test
+    @DisplayName("Deve permitir que ADMINISTRADOR remova um usuário (HTTP 204)")
+    void devePermitirAdministradorRemoverUsuario() throws Exception {
+        Usuario usuarioParaRemover = usuarioRepository.save(new Usuario(
+                "Usuario a Remover",
+                "11144477799",
+                "remover.teste@example.com",
+                passwordEncoder.encode("Senha@123"),
+                "71988889999",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.PACIENTE)));
+
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        mockMvc.perform(delete("/api/v1/usuarios/" + usuarioParaRemover.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        assertThat(usuarioRepository.findById(usuarioParaRemover.getId())).isEmpty();
+    }
+
+    /**
+     * Cenário de Falha: Usuário com role PACIENTE tenta remover outro usuário (HTTP 403).
+     */
+    @Test
+    @DisplayName("Deve negar a PACIENTE tentar remover um usuário (HTTP 403)")
+    void deveNegarAcessoPacienteRemoverUsuario() throws Exception {
+        Usuario alvo = usuarioRepository.save(new Usuario(
+                "Alvo Nao Removido",
+                "22255588800",
+                "alvo.nao.remover@example.com",
+                passwordEncoder.encode("Senha@123"),
+                "71977778888",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.PACIENTE)));
+
+        String pacienteToken = testJwtTokenProvider.generatePacienteTestToken("paciente.remover@example.com");
+
+        mockMvc.perform(delete("/api/v1/usuarios/" + alvo.getId())
+                        .header("Authorization", "Bearer " + pacienteToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+
+        assertThat(usuarioRepository.findById(alvo.getId())).isPresent();
+    }
+
+    /**
+     * Cenário de Falha: Requisição sem token JWT ao tentar remover usuário (HTTP 401).
+     */
+    @Test
+    @DisplayName("Deve negar acesso sem token JWT ao remover usuário (HTTP 401)")
+    void deveNegarAcessoSemTokenRemoverUsuario() throws Exception {
+        mockMvc.perform(delete("/api/v1/usuarios/" + UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    /**
+     * Cenário de Falha: Administrador tenta remover usuário inexistente (HTTP 404).
+     */
+    @Test
+    @DisplayName("Deve retornar HTTP 404 ao tentar remover usuário inexistente")
+    void deveRetornar404AoRemoverUsuarioInexistente() throws Exception {
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        mockMvc.perform(delete("/api/v1/usuarios/" + UUID.randomUUID())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
     private record AlterarStatusUsuarioRequest(StatusUsuario status) {
     }
 

@@ -69,6 +69,11 @@ public class UsuarioService {
 		return toResponse(usuario);
 	}
 
+	public void deletarUsuario(UUID usuarioId) {
+		Usuario usuario = buscarUsuario(usuarioId);
+		usuarioRepository.delete(usuario);
+	}
+
 	@Transactional(readOnly = true)
 	public Page<UsuarioResponse> listarUsuarios(Pageable pageable) {
 		return usuarioRepository.findAll(pageable).map(this::toResponse);
