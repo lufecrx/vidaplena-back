@@ -80,6 +80,8 @@ app:
     jwt:
       secret: ${VIDAPLENA_JWT_SECRET:vidaplena-super-secret-production-key-for-jwt-signing-2026}
       expiration: ${VIDAPLENA_JWT_EXPIRATION:PT2H}
+  cors:
+    allowed-origins: ${VIDAPLENA_CORS_ALLOWED_ORIGINS:${CORS_ALLOWED_ORIGINS:http://localhost:3000}}
   mail:
     enabled: ${VIDAPLENA_MAIL_ENABLED:false}
 
