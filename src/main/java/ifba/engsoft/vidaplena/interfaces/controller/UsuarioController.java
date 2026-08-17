@@ -3,6 +3,10 @@ package ifba.engsoft.vidaplena.interfaces.controller;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,6 +83,34 @@ public class UsuarioController {
 				: Set.of(TipoUsuario.PACIENTE);
 		UsuarioResponse response = usuarioService.criarUsuario(request, tipos, StatusUsuario.ATIVO);
 		return ResponseEntity.status(201).body(response);
+	}
+
+	@Operation(
+			summary = "Listar usuários com paginação (Administrativo)",
+			description = "Retorna lista paginada de todos os usuários cadastrados na plataforma. Acesso restrito a administradores.")
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Lista paginada de usuários retornada com sucesso"),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Não autenticado / Token ausente ou inválido",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Acesso negado - Requer ROLE_ADMINISTRADOR",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Erro interno do servidor",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+	})
+	@GetMapping
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	public ResponseEntity<Page<UsuarioResponse>> listar(
+			@PageableDefault(size = 20, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+		Page<UsuarioResponse> response = usuarioService.listarUsuarios(pageable);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(

@@ -385,6 +385,70 @@ class UsuarioControllerSecurityTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    /**
+     * Cenário de Sucesso: Administrador lista usuários com paginação.
+     */
+    @Test
+    @DisplayName("Deve permitir que ADMINISTRADOR liste usuários com paginação (HTTP 200)")
+    void devePermitirAdministradorListarUsuariosPaginado() throws Exception {
+        usuarioRepository.save(new Usuario(
+                "Ana Costa",
+                "11122233344",
+                "ana.costa@example.com",
+                passwordEncoder.encode("Senha@123"),
+                "71988880001",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.PACIENTE)));
+
+        usuarioRepository.save(new Usuario(
+                "Bruno Lima",
+                "22233344455",
+                "bruno.lima@example.com",
+                passwordEncoder.encode("Senha@123"),
+                "71988880002",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.MEDICO)));
+
+        String adminToken = testJwtTokenProvider.generateAdminTestToken(ADMIN_EMAIL);
+
+        mockMvc.perform(get("/api/v1/usuarios?page=0&size=10&sort=nome,asc")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.totalElements").value(org.hamcrest.Matchers.greaterThanOrEqualTo(3)))
+                .andExpect(jsonPath("$.content[0].nome").value("Administrador de Segurança"))
+                .andExpect(jsonPath("$.content[1].nome").value("Ana Costa"))
+                .andExpect(jsonPath("$.content[2].nome").value("Bruno Lima"));
+    }
+
+    /**
+     * Cenário de Falha: Paciente tenta listar usuários.
+     */
+    @Test
+    @DisplayName("Deve negar a PACIENTE tentar listar usuários (HTTP 403)")
+    void deveNegarAcessoPacienteListarUsuarios() throws Exception {
+        String pacienteToken = testJwtTokenProvider.generatePacienteTestToken("paciente.listagem@example.com");
+
+        mockMvc.perform(get("/api/v1/usuarios")
+                        .header("Authorization", "Bearer " + pacienteToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * Cenário de Falha: Não autenticado tenta listar usuários.
+     */
+    @Test
+    @DisplayName("Deve negar acesso sem token JWT ao listar usuários (HTTP 401)")
+    void deveNegarAcessoSemTokenJwtListarUsuarios() throws Exception {
+        mockMvc.perform(get("/api/v1/usuarios")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
     private record AlterarStatusUsuarioRequest(StatusUsuario status) {
     }
 

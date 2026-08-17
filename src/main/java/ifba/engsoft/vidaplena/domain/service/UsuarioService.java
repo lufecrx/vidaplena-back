@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,11 @@ public class UsuarioService {
 		Usuario usuario = buscarUsuario(usuarioId);
 		usuario.atualizarSenha(passwordEncoder.encode(novaSenha));
 		return toResponse(usuario);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<UsuarioResponse> listarUsuarios(Pageable pageable) {
+		return usuarioRepository.findAll(pageable).map(this::toResponse);
 	}
 
 	@Transactional(readOnly = true)
