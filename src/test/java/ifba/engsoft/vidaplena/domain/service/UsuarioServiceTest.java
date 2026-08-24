@@ -206,4 +206,46 @@ class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findById(inexistenteId);
         verify(usuarioRepository, never()).delete(any());
     }
+
+    @Test
+    @DisplayName("Deve criar usuário com tipos específicos com sucesso")
+    void deveCriarUsuarioComTiposEspecificos() {
+        ifba.engsoft.vidaplena.interfaces.dto.usuario.CadastroUsuarioRequest request =
+                new ifba.engsoft.vidaplena.interfaces.dto.usuario.CadastroUsuarioRequest(
+                        "Novo Medico", "111.222.333-44", "medico.novo@example.com",
+                        "SenhaForte@123", "71988887777", java.time.LocalDate.of(1985, 5, 20),
+                        Set.of(TipoUsuario.MEDICO, TipoUsuario.PACIENTE));
+
+        when(usuarioRepository.existsByEmailIgnoreCaseOrCpf("medico.novo@example.com", "11122233344")).thenReturn(false);
+        when(passwordEncoder.encode("SenhaForte@123")).thenReturn("encodedPassword123");
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> {
+            Usuario u = invocation.getArgument(0);
+            ReflectionTestUtils.setField(u, "id", UUID.randomUUID());
+            return u;
+        });
+
+        UsuarioResponse response = usuarioService.criarUsuario(request, Set.of(TipoUsuario.MEDICO, TipoUsuario.PACIENTE), StatusUsuario.PENDENTE_VALIDACAO);
+
+        assertThat(response).isNotNull();
+        assertThat(response.email()).isEqualTo("medico.novo@example.com");
+        assertThat(response.cpf()).isEqualTo("11122233344");
+        assertThat(response.status()).isEqualTo(StatusUsuario.PENDENTE_VALIDACAO);
+        assertThat(response.tipos()).containsExactlyInAnyOrder(TipoUsuario.MEDICO, TipoUsuario.PACIENTE);
+    }
+
+    @Test
+    @DisplayName("Deve lançar conflito ao tentar criar usuário com e-mail ou CPF duplicado")
+    void deveLancarConflitoAoCriarUsuarioDuplicado() {
+        ifba.engsoft.vidaplena.interfaces.dto.usuario.CadastroUsuarioRequest request =
+                new ifba.engsoft.vidaplena.interfaces.dto.usuario.CadastroUsuarioRequest(
+                        "Duplicado", "12345678901", "carlos.silva@example.com",
+                        "Senha@123", "71999998888", null);
+
+        when(usuarioRepository.existsByEmailIgnoreCaseOrCpf("carlos.silva@example.com", "12345678901")).thenReturn(true);
+
+        assertThrows(ResponseStatusException.class,
+                () -> usuarioService.criarUsuario(request, Set.of(TipoUsuario.PACIENTE), StatusUsuario.PENDENTE_VALIDACAO));
+
+        verify(usuarioRepository, never()).save(any());
+    }
 }

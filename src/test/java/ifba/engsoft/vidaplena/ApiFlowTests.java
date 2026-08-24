@@ -101,6 +101,25 @@ class ApiFlowTests {
 	}
 
 	@Test
+	void deveCadastrarUsuarioComTiposEspecificosNaRotaDeAuth() throws Exception {
+		HttpResult cadastro = postJson("/api/v1/auth/register", Map.of(
+				"nome", "Dr. Roberto Medico",
+				"cpf", "111.222.333-44",
+				"email", "roberto.medico@example.com",
+				"senha", "Senha@123",
+				"telefone", "71988889999",
+				"dataNascimento", "1980-05-20",
+				"tipos", Set.of("MEDICO", "PACIENTE")), null);
+
+		assertThat(cadastro.statusCode()).isEqualTo(201);
+		assertThat(cadastro.body()).containsEntry("email", "roberto.medico@example.com");
+		assertThat(cadastro.body()).containsEntry("status", "PENDENTE_VALIDACAO");
+		@SuppressWarnings("unchecked")
+		java.util.List<String> tipos = (java.util.List<String>) cadastro.body().get("tipos");
+		assertThat(tipos).containsExactlyInAnyOrder("MEDICO", "PACIENTE");
+	}
+
+	@Test
 	void deveAceitarRecuperacaoParaEmailInexistenteSemVazarInformacao() throws Exception {
 		HttpResult response = postJson("/api/v1/auth/forgot-password", Map.of("email", "inexistente@example.com"), null);
 

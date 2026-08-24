@@ -30,7 +30,7 @@ public record CadastroUsuarioRequest(
 		@Schema(description = "Data de nascimento do usuário no formato ISO (AAAA-MM-DD)", example = "1990-05-15")
 		LocalDate dataNascimento,
 
-		@Schema(description = "Conjunto de papéis/perfis atribuídos ao usuário na criação administrativa (opcional, padrão PACIENTE)", example = "[\"MEDICO\", \"PACIENTE\"]")
+		@Schema(description = "Conjunto de papéis/perfis atribuídos ao usuário (opcional, padrão PACIENTE)", example = "[\"MEDICO\", \"PACIENTE\"]")
 		Set<TipoUsuario> tipos) {
 
 	public CadastroUsuarioRequest(String nome, String cpf, String email, String senha, String telefone, LocalDate dataNascimento) {

@@ -43,8 +43,8 @@ public class AuthController {
 	}
 
 	@Operation(
-			summary = "Cadastrar novo paciente (Auto-cadastro público)",
-			description = "Cria um novo usuário na plataforma com o papel de PACIENTE e status PENDENTE_VALIDACAO.")
+			summary = "Cadastrar novo usuário (Auto-cadastro público)",
+			description = "Cria um novo usuário na plataforma com os papéis/tipos informados (padrão PACIENTE caso não informado) e status PENDENTE_VALIDACAO.")
 	@ApiResponses(value = {
 			@ApiResponse(
 					responseCode = "201",
@@ -61,7 +61,10 @@ public class AuthController {
 	})
 	@PostMapping("/register")
 	public ResponseEntity<UsuarioResponse> register(@Valid @RequestBody CadastroUsuarioRequest request) {
-		UsuarioResponse response = usuarioService.criarUsuario(request, Set.of(TipoUsuario.PACIENTE), StatusUsuario.PENDENTE_VALIDACAO);
+		Set<TipoUsuario> tipos = (request.tipos() != null && !request.tipos().isEmpty())
+				? request.tipos()
+				: Set.of(TipoUsuario.PACIENTE);
+		UsuarioResponse response = usuarioService.criarUsuario(request, tipos, StatusUsuario.PENDENTE_VALIDACAO);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
