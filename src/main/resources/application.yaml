@@ -12,6 +12,10 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 30MB
 
 app:
   security:
@@ -22,6 +26,8 @@ app:
     allowed-origins: ${VIDAPLENA_CORS_ALLOWED_ORIGINS:${CORS_ALLOWED_ORIGINS:http://localhost:3000}}
   mail:
     enabled: ${VIDAPLENA_MAIL_ENABLED:false}
+  storage:
+    upload-dir: ${VIDAPLENA_UPLOAD_DIR:./uploads/documentos}
 
 springdoc:
   api-docs:

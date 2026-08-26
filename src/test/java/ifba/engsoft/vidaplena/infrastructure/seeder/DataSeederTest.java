@@ -78,6 +78,9 @@ class DataSeederTest {
     @Autowired
     private NotaRetificacaoRepository notaRetificacaoRepository;
 
+    @Autowired
+    private ifba.engsoft.vidaplena.domain.repository.saude.DocumentoProntuarioRepository documentoProntuarioRepository;
+
     @Test
     @DisplayName("Deve popular contas para todos os perfis com credenciais válidas")
     void devePopularContasParaTodosOsPerfis() {
@@ -131,6 +134,9 @@ class DataSeederTest {
 
         assertThat(notaRetificacaoRepository.findAllByRegistroAtendimentoIdOrderByDataRegistroAsc(registro.get().getId()))
                 .isNotEmpty();
+
+        assertThat(documentoProntuarioRepository.findAllByProntuarioIdOrderByDataCriacaoDesc(prontuario.getId()))
+                .hasSize(2);
     }
 
     @Test
@@ -140,6 +146,7 @@ class DataSeederTest {
         long contagemOrganizacoesAntes = organizacaoRepository.count();
         long contagemPacientesAntes = pacienteRepository.count();
         long contagemProfissionaisAntes = profissionalRepository.count();
+        long contagemDocumentosAntes = documentoProntuarioRepository.count();
 
         // Executar o seeder uma segunda vez
         assertDoesNotThrow(() -> dataSeeder.run());
@@ -149,6 +156,7 @@ class DataSeederTest {
         assertThat(organizacaoRepository.count()).isEqualTo(contagemOrganizacoesAntes);
         assertThat(pacienteRepository.count()).isEqualTo(contagemPacientesAntes);
         assertThat(profissionalRepository.count()).isEqualTo(contagemProfissionaisAntes);
+        assertThat(documentoProntuarioRepository.count()).isEqualTo(contagemDocumentosAntes);
     }
 
     private void validarUsuario(String email, String senhaPlana, TipoUsuario tipoEsperado) {

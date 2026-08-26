@@ -4,6 +4,7 @@ import ifba.engsoft.vidaplena.domain.dto.saude.ProntuarioDTO;
 import ifba.engsoft.vidaplena.domain.dto.saude.ProntuarioResponseDTO;
 import ifba.engsoft.vidaplena.domain.dto.saude.RegistroAtendimentoResponseDTO;
 import ifba.engsoft.vidaplena.domain.dto.saude.NotaRetificacaoResponseDTO;
+import ifba.engsoft.vidaplena.domain.dto.saude.DocumentoProntuarioResponseDTO;
 import ifba.engsoft.vidaplena.domain.model.saude.Prontuario;
 import ifba.engsoft.vidaplena.domain.model.saude.Paciente;
 import ifba.engsoft.vidaplena.domain.model.saude.RegistroAtendimento;
@@ -189,12 +190,17 @@ public class ProntuarioController {
                 .map(this::mapToRegistroResponseDTO)
                 .toList();
 
+        List<DocumentoProntuarioResponseDTO> documentos = prontuario.getDocumentos() != null
+                ? prontuario.getDocumentos().stream().map(DocumentoProntuarioController::mapToResponseDTO).toList()
+                : List.of();
+
         return new ProntuarioResponseDTO(
                 prontuario.getId(),
                 prontuario.getPaciente().getId(),
                 prontuario.getPaciente().getUsuario() != null ? prontuario.getPaciente().getUsuario().getNome() : "N/A",
                 prontuario.getObservacoesGerais(),
-                registros
+                registros,
+                documentos
         );
     }
 

@@ -261,12 +261,61 @@ sequenceDiagram
 
 ---
 
-## 6. Resumo das Decisões de Arquitetura e Engenharia
+## 6. Fluxo Crítico 6: Anexo de Documentos, Laudos e Imagens ao Prontuário
+
+Este fluxo descreve a anexação segura de arquivos e exames (laudos, PDFs, imagens, exames laboratoriais) ao prontuário do paciente por profissionais autorizados, com validação de formato/tamanho, sanitização contra *path traversal* e streaming de download.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Prof as 🩺 Profissional de Saúde
+    participant DocCtrl as 🎮 DocumentoProntuarioController
+    participant DocSvc as ⚙️ DocumentoProntuarioService
+    participant ProntRepo as 🗄️ ProntuarioRepository
+    participant ProfRepo as 🗄️ ProfissionalRepository
+    participant StorageSvc as 💾 FileStorageService
+    participant DocRepo as 🗄️ DocumentoProntuarioRepository
+    actor Paciente as 🧑‍🦱 Paciente / Responsável
+
+    Note over Prof, DocRepo: ETAPA 1: Upload e Anexação do Documento
+    Prof->>DocCtrl: POST /api/v1/prontuarios/{prontuarioId}/documentos (Multipart: arquivo, titulo, tipoDocumento, profissionalId)
+    DocCtrl->>DocSvc: anexarDocumento(prontuarioId, profissionalId, ..., arquivo)
+    DocSvc->>ProntRepo: findById(prontuarioId)
+    ProntRepo-->>DocSvc: Prontuario encontrado
+    DocSvc->>ProfRepo: findById(profissionalId)
+    ProfRepo-->>DocSvc: Profissional encontrado
+    
+    DocSvc->>StorageSvc: salvarArquivo(MultipartFile)
+    StorageSvc->>StorageSvc: Valida tamanho (<=25MB), extensão permitida e path traversal (..)
+    StorageSvc->>StorageSvc: Grava binário em disco com UUID prefix
+    StorageSvc-->>DocSvc: nomeArquivoUnico (ex: "uuid_laudo_ecg.pdf")
+    
+    DocSvc->>DocRepo: save(DocumentoProntuario)
+    DocRepo-->>DocSvc: DocumentoProntuario persistido
+    DocSvc-->>DocCtrl: DocumentoProntuario
+    DocCtrl-->>Prof: HTTP 201 Created (DocumentoProntuarioResponseDTO com downloadUrl)
+
+    Note over Paciente, StorageSvc: ETAPA 2: Download / Visualização Inline do Documento
+    Paciente->>DocCtrl: GET /api/v1/prontuarios/documentos/{documentoId}/download
+    DocCtrl->>DocSvc: obterDocumentoPorId(documentoId)
+    DocSvc->>DocRepo: findById(documentoId)
+    DocRepo-->>DocSvc: DocumentoProntuario (nomeArquivo, tipoConteudo, nomeOriginal)
+    DocCtrl->>DocSvc: carregarRecursoArquivo(documentoId)
+    DocSvc->>StorageSvc: carregarArquivoComoRecurso(nomeArquivo)
+    StorageSvc-->>DocSvc: Resource (UrlResource)
+    DocSvc-->>DocCtrl: Resource
+    DocCtrl-->>Paciente: HTTP 200 OK + Fluxo de bytes (Content-Type + Content-Disposition: inline)
+```
+
+---
+
+## 7. Resumo das Decisões de Arquitetura e Engenharia
 
 | Fluxo | Mecanismo Central | Justificativa Técnica / Compliance |
 | :--- | :--- | :--- |
 | **Autenticação & RBAC** | Stateless JWT + Security Filter Chain | Escalabilidade horizontal, sem persistência de sessão em memória, autorização granular via `@PreAuthorize`. |
 | **Agendamentos** | Prevenção de conflito + Optimistic Locking (`@Version`) + Spring Events | Evita *race conditions* em marcação simultânea; desacopla envio de e-mails/notificações da transação principal. |
 | **Prontuário & Atendimento** | Bloqueio de mutação (`isFinalizado()`) + Notas de Retificação | Conformidade com as resoluções do CFM (Conselho Federal de Medicina) e LGPD para integridade do histórico médico. |
+| **Documentos & Laudos** | Armazenamento seguro de arquivos + UUID prefix + Validação MIME/extensão | Previne *path traversal* (`..`), bloqueia executáveis maliciosos e permite anexação e streaming de exames laboratoriais e de imagem. |
 | **Vínculos Familiares** | Validação de maioridade ($\ge 18$ anos) + Unicidade de vínculo ativo | Garante validade jurídica de tutela e responsabilidade sobre dependentes vulneráveis (crianças, idosos). |
 | **Recuperação de Senha** | Token Hashing (SHA-256) + Expiração TTL (30 min) + Timing Attack Mitigation | Mesmo se o banco for comprometido, tokens não podem ser utilizados diretamente; resposta opaca HTTP 202 impede enumeração de e-mails. |

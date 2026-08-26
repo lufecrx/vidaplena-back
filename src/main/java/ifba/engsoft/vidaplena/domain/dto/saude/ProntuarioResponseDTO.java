@@ -19,9 +19,16 @@ public record ProntuarioResponseDTO(
     String observacoesGerais,
 
     @Schema(description = "Lista dos registros de atendimento clínico vinculados a este prontuário")
-    List<RegistroAtendimentoResponseDTO> registros
+    List<RegistroAtendimentoResponseDTO> registros,
+
+    @Schema(description = "Lista dos documentos, exames e laudos anexados a este prontuário")
+    List<DocumentoProntuarioResponseDTO> documentos
 ) {
     public ProntuarioResponseDTO(UUID id, UUID pacienteId, String pacienteNome, String observacoesGerais) {
-        this(id, pacienteId, pacienteNome, observacoesGerais, List.of());
+        this(id, pacienteId, pacienteNome, observacoesGerais, List.of(), List.of());
+    }
+
+    public ProntuarioResponseDTO(UUID id, UUID pacienteId, String pacienteNome, String observacoesGerais, List<RegistroAtendimentoResponseDTO> registros) {
+        this(id, pacienteId, pacienteNome, observacoesGerais, registros, List.of());
     }
 }

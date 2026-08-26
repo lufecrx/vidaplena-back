@@ -62,6 +62,9 @@ public class RegistroAtendimento extends EntidadeAuditavel {
     @OneToMany(mappedBy = "registroAtendimento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<NotaRetificacao> notasRetificacao = new ArrayList<>();
 
+    @OneToMany(mappedBy = "registroAtendimento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DocumentoProntuario> documentos = new ArrayList<>();
+
     // Construtores
     public RegistroAtendimento() {}
 
@@ -172,5 +175,18 @@ public class RegistroAtendimento extends EntidadeAuditavel {
     public void adicionarNotaRetificacao(NotaRetificacao nota) {
         this.notasRetificacao.add(nota);
         nota.setRegistroAtendimento(this);
+    }
+
+    public List<DocumentoProntuario> getDocumentos() {
+        return documentos;
+    }
+
+    public void setDocumentos(List<DocumentoProntuario> documentos) {
+        this.documentos = documentos;
+    }
+
+    public void adicionarDocumento(DocumentoProntuario documento) {
+        this.documentos.add(documento);
+        documento.setRegistroAtendimento(this);
     }
 }

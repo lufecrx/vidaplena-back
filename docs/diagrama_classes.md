@@ -249,8 +249,11 @@ classDiagram
         -Paciente paciente
         -String observacoesGerais
         -List~RegistroAtendimento~ registrosAtendimento
+        -List~DocumentoProntuario~ documentos
         +adicionarRegistro(RegistroAtendimento) void
+        +adicionarDocumento(DocumentoProntuario) void
         +getRegistrosAtendimento() List~RegistroAtendimento~
+        +getDocumentos() List~DocumentoProntuario~
     }
 
     class RegistroAtendimento {
@@ -266,7 +269,9 @@ classDiagram
         -String notasClinicas
         -boolean finalizado
         -List~NotaRetificacao~ notasRetificacao
+        -List~DocumentoProntuario~ documentos
         +adicionarNotaRetificacao(NotaRetificacao) void
+        +adicionarDocumento(DocumentoProntuario) void
         +isFinalizado() boolean
         +setFinalizado(boolean) void
     }
@@ -281,6 +286,36 @@ classDiagram
         +getDataRegistro() LocalDateTime
     }
 
+    class DocumentoProntuario {
+        -UUID id
+        -Prontuario prontuario
+        -Profissional profissional
+        -RegistroAtendimento registroAtendimento
+        -String titulo
+        -String descricao
+        -TipoDocumento tipoDocumento
+        -String nomeOriginal
+        -String nomeArquivo
+        -String tipoConteudo
+        -Long tamanhoBytes
+        -LocalDate dataDocumento
+        +getId() UUID
+        +getTitulo() String
+        +getTipoDocumento() TipoDocumento
+        +getNomeArquivo() String
+    }
+
+    class TipoDocumento {
+        <<enumeration>>
+        LAUDO
+        EXAME_LABORATORIAL
+        EXAME_IMAGEM
+        RECEITA
+        ATESTADO
+        RELATORIO_CLINICO
+        OUTROS
+    }
+
     %% ==========================================
     %% RELACIONAMENTOS DE HERANÇA
     %% ==========================================
@@ -293,6 +328,7 @@ classDiagram
     EntidadeAuditavel <|-- Prontuario
     EntidadeAuditavel <|-- RegistroAtendimento
     EntidadeAuditavel <|-- NotaRetificacao
+    EntidadeAuditavel <|-- DocumentoProntuario
 
     Organizacao <|-- Clinica
     Organizacao <|-- Empresa
@@ -324,10 +360,14 @@ classDiagram
 
     Prontuario "1" *-- "1" Paciente : historico do paciente
     Prontuario "1" *-- "*" RegistroAtendimento : contem evolucoes
+    Prontuario "1" *-- "*" DocumentoProntuario : contem anexos e laudos
     RegistroAtendimento "1" --> "1" Profissional : autor do registro
     RegistroAtendimento "1" --> "1" Agendamento : consulta de origem
     RegistroAtendimento "1" *-- "*" NotaRetificacao : adendos auditaveis
+    RegistroAtendimento "1" o-- "*" DocumentoProntuario : exames do atendimento
     NotaRetificacao "1" --> "1" Profissional : autor do adendo
+    DocumentoProntuario "1" --> "1" Profissional : autor do anexo
+    DocumentoProntuario "1" --> "1" TipoDocumento : classificacao
 ```
 
 ---
@@ -364,9 +404,10 @@ classDiagram
 | **`Paciente`** | `pacientes` | Perfil clínico especializado do usuário. Contém histórico familiar, alergias e medicamentos. | Relação 1:1 estrita com `Usuario`. Alergias e medicações armazenadas em tabelas associativas dedicadas. |
 | **`Profissional`** | `profissionais` | Perfil clínico especializado de profissionais de saúde (médicos, nutricionistas, educadores físicos). | Relação 1:1 estrita com `Usuario`. `registroConselho` (CRM, CRN, CREF) único por profissional. |
 | **`Agendamento`** | `agendamentos` | Registro de agendamento de atendimento/consulta médica ou multidisciplinar. | **Validações:** Data futura obrigatória; prevenção de conflito/choque de horários do profissional; campo `@Version` para **Optimistic Locking**. |
-| **`Prontuario`** | `prontuarios` | O prontuário clínico eletrônico único do paciente. | Relação 1:1 única por `Paciente`. Agrega todos os atendimentos e histórico de saúde cronológico. |
+| **`Prontuario`** | `prontuarios` | O prontuário clínico eletrônico único do paciente. | Relação 1:1 única por `Paciente`. Agrega todos os atendimentos, documentos e histórico de saúde cronológico. |
 | **`RegistroAtendimento`** | `registros_atendimento` | Evolução clínica, hipótese diagnóstica, queixas e prescrições médicas/enfermagem. | **Imutabilidade Legal:** Quando `finalizado = true`, qualquer alteração direta ou exclusão é rejeitada (HTTP 422). |
 | **`NotaRetificacao`** | `notas_retificacao` | Adendo corretivo ou esclarecimento auditável adicionado a um registro finalizado. | Só pode ser anexada a registros finalizados; não altera o texto original do atendimento (aditividade imutável). |
+| **`DocumentoProntuario`** | `documentos_prontuario` | Laudos médicos, exames laboratoriais, receitas e exames de imagem anexados ao prontuário. | Armazenamento de arquivo físico sanitizado (UUID prefix), validação de tipos MIME e tamanho máximo (25MB). |
 
 ---
 

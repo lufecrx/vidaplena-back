@@ -17,3 +17,5 @@ app:
       expiration: PT1H
   mail:
     enabled: false
+  storage:
+    upload-dir: target/test-uploads

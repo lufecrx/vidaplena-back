@@ -30,6 +30,9 @@ public class Prontuario extends EntidadeAuditavel {
     @OneToMany(mappedBy = "prontuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RegistroAtendimento> registrosAtendimento = new ArrayList<>();
 
+    @OneToMany(mappedBy = "prontuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DocumentoProntuario> documentos = new ArrayList<>();
+
     // Construtores
     public Prontuario() {}
 
@@ -78,5 +81,18 @@ public class Prontuario extends EntidadeAuditavel {
     public void adicionarRegistro(RegistroAtendimento registro) {
         this.registrosAtendimento.add(registro);
         registro.setProntuario(this);
+    }
+
+    public List<DocumentoProntuario> getDocumentos() {
+        return documentos;
+    }
+
+    public void setDocumentos(List<DocumentoProntuario> documentos) {
+        this.documentos = documentos;
+    }
+
+    public void adicionarDocumento(DocumentoProntuario documento) {
+        this.documentos.add(documento);
+        documento.setProntuario(this);
     }
 }

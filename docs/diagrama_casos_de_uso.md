@@ -147,6 +147,7 @@ flowchart LR
         UC_EditRascunho(["Editar Rascunho de Atendimento"])
         UC_FinAtend(["Finalizar Atendimento (Travar Imutabilidade)"])
         UC_Retif(["Adicionar Nota de Retificação (Adendo)"])
+        UC_AnexDoc(["Anexar Laudos, Exames e Imagens"])
         UC_Audit(["Auditar Transação (Criado/Modificado Por)"])
     end
 
@@ -156,13 +157,16 @@ flowchart LR
     prof --> UC_EditRascunho
     prof --> UC_FinAtend
     prof --> UC_Retif
+    prof --> UC_AnexDoc
     admin --> UC_CriarPront
     admin --> UC_ConsPront
+    admin --> UC_AnexDoc
 
     UC_LancAtend -.->|<<include>>| UC_ValAgendConc
     UC_Retif -.->|<<extend>>| UC_FinAtend
     UC_LancAtend -.->|<<include>>| UC_Audit
     UC_Retif -.->|<<include>>| UC_Audit
+    UC_AnexDoc -.->|<<include>>| UC_Audit
     UC_Audit --> sys
 ```
 
@@ -209,6 +213,18 @@ flowchart LR
 
 ---
 
+### UC23: Anexar Documentos e Imagens ao Prontuário
+* **Atores:** Profissional de Saúde (Médico, Nutricionista, Personal Trainer), Administrador.
+* **Pré-condições:** Prontuário existente; Arquivo em formato permitido (PDF, PNG, JPG, WEBP, DICOM, etc.) com até 25MB.
+* **Fluxo Principal:**
+  1. O profissional seleciona o prontuário do paciente e anexa o arquivo (laudo, exame laboratorial, raio-x, tomografia, receita ou relatório).
+  2. O profissional informa título descritivo, categoria (`TipoDocumento`), observações clínicas e data do exame.
+  3. O sistema valida o tipo MIME e sanitiza o nome do arquivo prevenindo *path traversal*.
+  4. O sistema armazena o binário em local seguro e grava o registro na entidade `DocumentoProntuario`.
+  5. O sistema retorna os metadados do documento e URL de download/visualização com HTTP 201 Created.
+
+---
+
 ## 4. Matriz de Rastreabilidade RBAC (Casos de Uso vs Papéis)
 
 | Caso de Uso | PACIENTE | RESPONSAVEL | PROFISSIONAL (Méd/Nutri/Personal) | FUNC_ADMIN | REP_EMPRESA | ADMINISTRADOR |
@@ -229,5 +245,6 @@ flowchart LR
 | **UC19: Histórico Clínico**| 🔴 | 🔴 | 🟢 | 🔴 | 🔴 | 🟢 |
 | **UC20: Lançar Atendimento**| 🔴 | 🔴 | 🟢 | 🔴 | 🔴 | 🟢 |
 | **UC22: Retificar Prontuário**| 🔴 | 🔴 | 🟢 | 🔴 | 🔴 | 🟢 |
+| **UC23: Anexar Documentos**| 🔴 (Leitura 🟢) | 🔴 (Leitura 🟢) | 🟢 | 🔴 | 🔴 | 🟢 |
 
 *Legenda: 🟢 Permitido | 🔴 Acesso Negado (HTTP 403 Forbidden)*

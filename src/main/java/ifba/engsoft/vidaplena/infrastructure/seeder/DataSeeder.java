@@ -10,6 +10,7 @@ import ifba.engsoft.vidaplena.domain.model.organizacao.Clinica;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Empresa;
 import ifba.engsoft.vidaplena.domain.model.organizacao.Organizacao;
 import ifba.engsoft.vidaplena.domain.model.saude.Agendamento;
+import ifba.engsoft.vidaplena.domain.model.saude.DocumentoProntuario;
 import ifba.engsoft.vidaplena.domain.model.saude.Especialidade;
 import ifba.engsoft.vidaplena.domain.model.saude.NotaRetificacao;
 import ifba.engsoft.vidaplena.domain.model.saude.Paciente;
@@ -18,12 +19,14 @@ import ifba.engsoft.vidaplena.domain.model.saude.Prontuario;
 import ifba.engsoft.vidaplena.domain.model.saude.RegistroAtendimento;
 import ifba.engsoft.vidaplena.domain.model.saude.StatusAgendamento;
 import ifba.engsoft.vidaplena.domain.model.saude.TipoAtendimento;
+import ifba.engsoft.vidaplena.domain.model.saude.TipoDocumento;
 import ifba.engsoft.vidaplena.domain.model.saude.TipoSanguineo;
 import ifba.engsoft.vidaplena.domain.repository.UsuarioRepository;
 import ifba.engsoft.vidaplena.domain.repository.familia.FamiliaRepository;
 import ifba.engsoft.vidaplena.domain.repository.familia.VinculoDependenciaRepository;
 import ifba.engsoft.vidaplena.domain.repository.organizacao.OrganizacaoRepository;
 import ifba.engsoft.vidaplena.domain.repository.saude.AgendamentoRepository;
+import ifba.engsoft.vidaplena.domain.repository.saude.DocumentoProntuarioRepository;
 import ifba.engsoft.vidaplena.domain.repository.saude.NotaRetificacaoRepository;
 import ifba.engsoft.vidaplena.domain.repository.saude.PacienteRepository;
 import ifba.engsoft.vidaplena.domain.repository.saude.ProfissionalRepository;
@@ -68,6 +71,7 @@ public class DataSeeder implements CommandLineRunner {
     private final ProntuarioRepository prontuarioRepository;
     private final RegistroAtendimentoRepository registroAtendimentoRepository;
     private final NotaRetificacaoRepository notaRetificacaoRepository;
+    private final DocumentoProntuarioRepository documentoProntuarioRepository;
 
     public DataSeeder(
             UsuarioRepository usuarioRepository,
@@ -80,7 +84,8 @@ public class DataSeeder implements CommandLineRunner {
             AgendamentoRepository agendamentoRepository,
             ProntuarioRepository prontuarioRepository,
             RegistroAtendimentoRepository registroAtendimentoRepository,
-            NotaRetificacaoRepository notaRetificacaoRepository) {
+            NotaRetificacaoRepository notaRetificacaoRepository,
+            DocumentoProntuarioRepository documentoProntuarioRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.organizacaoRepository = organizacaoRepository;
@@ -92,6 +97,7 @@ public class DataSeeder implements CommandLineRunner {
         this.prontuarioRepository = prontuarioRepository;
         this.registroAtendimentoRepository = registroAtendimentoRepository;
         this.notaRetificacaoRepository = notaRetificacaoRepository;
+        this.documentoProntuarioRepository = documentoProntuarioRepository;
     }
 
     @Override
@@ -461,6 +467,40 @@ public class DataSeeder implements CommandLineRunner {
             );
             agendamentoFuturo.setDataHoraFim(dataHoraFutura.plusHours(1));
             agendamentoRepository.save(agendamentoFuturo);
+        }
+
+        // Documentos e Imagens Anexados ao Prontuário
+        if (documentoProntuarioRepository.findAllByProntuarioIdOrderByDataCriacaoDesc(prontuario.getId()).isEmpty()) {
+            DocumentoProntuario docLaudo = new DocumentoProntuario(
+                    prontuario,
+                    medico,
+                    "Laudo de Eletrocardiograma (ECG)",
+                    TipoDocumento.LAUDO,
+                    "laudo_ecg_repouso.pdf",
+                    "seed_laudo_ecg_repouso.pdf",
+                    "application/pdf",
+                    245760L
+            );
+            docLaudo.setDescricao("Traçado de eletrocardiograma em repouso dentro dos padrões de normalidade. Ritmo sinusal regular.");
+            docLaudo.setDataDocumento(dataHoraPassada.toLocalDate());
+            if (agendamentoConcluido != null) {
+                registroAtendimentoRepository.findByAgendamentoId(agendamentoConcluido.getId()).ifPresent(docLaudo::setRegistroAtendimento);
+            }
+            documentoProntuarioRepository.save(docLaudo);
+
+            DocumentoProntuario docExame = new DocumentoProntuario(
+                    prontuario,
+                    medico,
+                    "Hemograma Completo e Perfil Lipídico",
+                    TipoDocumento.EXAME_LABORATORIAL,
+                    "resultado_laboratorio_hemograma.pdf",
+                    "seed_resultado_laboratorio_hemograma.pdf",
+                    "application/pdf",
+                    512000L
+            );
+            docExame.setDescricao("Resultados laboratoriais de rotina: hemograma, glicemia de jejum, colesterol total e frações.");
+            docExame.setDataDocumento(dataHoraPassada.toLocalDate());
+            documentoProntuarioRepository.save(docExame);
         }
     }
 
