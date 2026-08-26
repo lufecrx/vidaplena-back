@@ -84,6 +84,8 @@ app:
     allowed-origins: ${VIDAPLENA_CORS_ALLOWED_ORIGINS:${CORS_ALLOWED_ORIGINS:http://localhost:3000}}
   mail:
     enabled: ${VIDAPLENA_MAIL_ENABLED:false}
+  storage:
+    upload-dir: ${VIDAPLENA_UPLOAD_DIR:/app/uploads/documentos}
 
 # Desabilitar Swagger/OpenAPI em Produção por segurança
 springdoc:

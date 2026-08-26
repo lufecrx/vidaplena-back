@@ -26,7 +26,7 @@ public class FileStorageService {
 
     private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
 
-    private final Path uploadLocation;
+    private Path uploadLocation;
     private static final long MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
@@ -43,8 +43,15 @@ public class FileStorageService {
         try {
             Files.createDirectories(this.uploadLocation);
             log.info("Diretório de armazenamento de anexos inicializado em: {}", this.uploadLocation);
-        } catch (IOException ex) {
-            throw new RegraNegocioException("Não foi possível criar o diretório para armazenamento de arquivos: " + ex.getMessage());
+        } catch (Exception ex) {
+            log.warn("Não foi possível inicializar o diretório configurado de upload '{}': {}. Utilizando diretório temporário do sistema como fallback.", this.uploadLocation, ex.getMessage());
+            try {
+                this.uploadLocation = Paths.get(System.getProperty("java.io.tmpdir"), "vidaplena-uploads").toAbsolutePath().normalize();
+                Files.createDirectories(this.uploadLocation);
+                log.info("Diretório de fallback de uploads inicializado em: {}", this.uploadLocation);
+            } catch (Exception fallbackEx) {
+                log.error("Falha ao criar diretório de fallback para uploads: {}", fallbackEx.getMessage());
+            }
         }
     }
 
@@ -78,6 +85,9 @@ public class FileStorageService {
         String uniqueFilename = UUID.randomUUID() + "_" + sanitizedFilename;
 
         try {
+            if (!Files.exists(this.uploadLocation)) {
+                Files.createDirectories(this.uploadLocation);
+            }
             Path targetLocation = this.uploadLocation.resolve(uniqueFilename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             log.info("Arquivo armazenado com sucesso: {}", targetLocation);

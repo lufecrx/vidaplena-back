@@ -41,12 +41,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads/documentos
     networks:
       - vidaplena-network
     restart: unless-stopped
 
 volumes:
   postgres_data:
+    driver: local
+  uploads_data:
     driver: local
 
 networks:
