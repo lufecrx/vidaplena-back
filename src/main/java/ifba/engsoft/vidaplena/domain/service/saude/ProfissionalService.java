@@ -94,6 +94,16 @@ public class ProfissionalService {
         return mapearParaResponseDTO(profissional);
     }
 
+    public ProfissionalResponseDTO obterPorUsuarioId(UUID usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RegraNegocioException("Usuário com ID " + usuarioId + " não encontrado"));
+
+        Profissional profissional = profissionalRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new RegraNegocioException("Perfil clínico de profissional não encontrado para o usuário informado"));
+
+        return mapearParaResponseDTO(profissional);
+    }
+
     public List<ProfissionalResponseDTO> listarProfissionais() {
         return profissionalRepository.findAll().stream()
                 .map(this::mapearParaResponseDTO)

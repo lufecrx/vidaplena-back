@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/empresas")
+@RequestMapping({"/api/v1/empresas", "/api/empresas"})
 @Tag(name = "Empresas", description = "Gestão de empresas parceiras e planos de saúde corporativos")
 @SecurityRequirement(name = "bearerAuth")
 public class EmpresaController {
@@ -66,7 +66,7 @@ public class EmpresaController {
 
     @Operation(
             summary = "Buscar empresa por ID",
-            description = "Recupera os detalhes de cadastro de uma empresa específica. Acesso restrito a ADMINISTRADOR ou REPRESENTANTE_EMPRESA.")
+            description = "Recupera os detalhes de cadastro de uma empresa específica.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -90,7 +90,7 @@ public class EmpresaController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'FUNCIONARIO_ADMINISTRATIVO', 'PACIENTE', 'RESPONSAVEL', 'CUIDADOR')")
     public ResponseEntity<EmpresaResponseDTO> buscarEmpresaPorId(
             @Parameter(description = "Identificador único (UUID) da empresa", example = "789e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
@@ -100,7 +100,7 @@ public class EmpresaController {
 
     @Operation(
             summary = "Listar todas as empresas parceiras",
-            description = "Retorna a lista completa de empresas cadastradas no sistema. Acesso restrito a ADMINISTRADOR ou REPRESENTANTE_EMPRESA.")
+            description = "Retorna a lista completa de empresas cadastradas no sistema.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -120,7 +120,7 @@ public class EmpresaController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'REPRESENTANTE_EMPRESA', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'FUNCIONARIO_ADMINISTRATIVO', 'PACIENTE', 'RESPONSAVEL', 'CUIDADOR')")
     public ResponseEntity<List<EmpresaResponseDTO>> listarEmpresas() {
         List<EmpresaResponseDTO> empresas = organizacaoService.listarEmpresas();
         return new ResponseEntity<>(empresas, HttpStatus.OK);

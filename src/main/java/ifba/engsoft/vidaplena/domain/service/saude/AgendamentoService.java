@@ -94,12 +94,31 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
+    public AgendamentoResponseDTO obterPorId(UUID id) {
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Agendamento não encontrado"));
+        return mapearParaResponseDTO(agendamento);
+    }
+
+    @Transactional(readOnly = true)
     public List<AgendamentoResponseDTO> listarPorProfissional(UUID profissionalId) {
         if (!profissionalRepository.existsById(profissionalId)) {
             throw new RegraNegocioException("Profissional não encontrado");
         }
 
         return agendamentoRepository.findByProfissionalIdOrderByDataHoraAsc(profissionalId)
+                .stream()
+                .map(this::mapearParaResponseDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AgendamentoResponseDTO> listarPorPaciente(UUID pacienteId) {
+        if (!pacienteRepository.existsById(pacienteId)) {
+            throw new RegraNegocioException("Paciente não encontrado");
+        }
+
+        return agendamentoRepository.findByPacienteIdOrderByDataHoraAsc(pacienteId)
                 .stream()
                 .map(this::mapearParaResponseDTO)
                 .toList();

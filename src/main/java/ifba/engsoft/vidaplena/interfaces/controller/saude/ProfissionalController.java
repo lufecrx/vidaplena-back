@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/profissionais")
+@RequestMapping({"/api/v1/profissionais", "/api/profissionais"})
 @CrossOrigin(origins = "*")
 @Tag(name = "Profissionais de Saúde", description = "Gestão do corpo clínico (médicos, nutricionistas, educadores físicos, cuidadores), especialidades e registros em conselhos")
 @SecurityRequirement(name = "bearerAuth")
@@ -131,6 +131,35 @@ public class ProfissionalController {
             @Parameter(description = "Identificador único (UUID) do profissional", example = "890e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
         ProfissionalResponseDTO profissional = profissionalService.obterProfissional(id);
+        return new ResponseEntity<>(profissional, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Obter dados do profissional pelo ID do usuário",
+            description = "Recupera o perfil profissional associado a uma conta de usuário.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Profissional localizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProfissionalResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Perfil de profissional não encontrado para o usuário informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<ProfissionalResponseDTO> obterPorUsuarioId(
+            @Parameter(description = "Identificador único (UUID) da conta de usuário", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID usuarioId) {
+        ProfissionalResponseDTO profissional = profissionalService.obterPorUsuarioId(usuarioId);
         return new ResponseEntity<>(profissional, HttpStatus.OK);
     }
 

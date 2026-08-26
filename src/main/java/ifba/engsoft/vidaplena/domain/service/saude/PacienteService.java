@@ -81,6 +81,16 @@ public class PacienteService {
         return mapearParaResponseDTO(paciente);
     }
 
+    public PacienteResponseDTO obterPorUsuarioId(UUID usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RegraNegocioException("Usuário com ID " + usuarioId + " não encontrado"));
+
+        Paciente paciente = pacienteRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new RegraNegocioException("Perfil clínico de paciente não encontrado para o usuário informado"));
+
+        return mapearParaResponseDTO(paciente);
+    }
+
     public List<PacienteResponseDTO> listarPacientes() {
         return pacienteRepository.findAll().stream()
                 .map(this::mapearParaResponseDTO)

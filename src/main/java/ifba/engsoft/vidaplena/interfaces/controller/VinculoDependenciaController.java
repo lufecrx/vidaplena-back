@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/vinculos")
+@RequestMapping({"/api/v1/vinculos", "/api/vinculos"})
 @Tag(name = "Vínculos de Dependência", description = "Gestão de laços de dependência e responsabilidade entre usuários no núcleo familiar")
 @SecurityRequirement(name = "bearerAuth")
 public class VinculoDependenciaController {
@@ -62,6 +62,82 @@ public class VinculoDependenciaController {
     public ResponseEntity<VinculoDependenciaResponseDTO> criarVinculo(@Valid @RequestBody VinculoDependenciaRequestDTO dto) {
         VinculoDependenciaResponseDTO vinculo = vinculoDependenciaService.criarVinculo(dto);
         return new ResponseEntity<>(vinculo, HttpStatus.CREATED);
+    }
+
+    @Operation(
+            summary = "Obter vínculo de dependência por ID",
+            description = "Recupera os detalhes de um vínculo de dependência específico.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vínculo localizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = VinculoDependenciaResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Vínculo não encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<VinculoDependenciaResponseDTO> obterVinculo(
+            @Parameter(description = "Identificador único (UUID) do vínculo", example = "7c9e6679-7425-40de-944b-e07fc1f90ae7")
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(vinculoDependenciaService.obterPorId(id));
+    }
+
+    @Operation(
+            summary = "Listar vínculos por responsável",
+            description = "Recupera todos os vínculos de dependência de um responsável familiar.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de vínculos retornada com sucesso"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/responsavel/{responsavelId}")
+    public ResponseEntity<java.util.List<VinculoDependenciaResponseDTO>> listarPorResponsavel(
+            @Parameter(description = "Identificador único (UUID) do responsável", example = "7c9e6679-7425-40de-944b-e07fc1f90ae7")
+            @PathVariable UUID responsavelId,
+            @RequestParam(defaultValue = "false") boolean apenasAtivos) {
+        return ResponseEntity.ok(vinculoDependenciaService.listarPorResponsavel(responsavelId, apenasAtivos));
+    }
+
+    @Operation(
+            summary = "Listar vínculos por dependente",
+            description = "Recupera todos os vínculos onde o usuário é dependente.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de vínculos retornada com sucesso"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/dependente/{dependenteId}")
+    public ResponseEntity<java.util.List<VinculoDependenciaResponseDTO>> listarPorDependente(
+            @Parameter(description = "Identificador único (UUID) do dependente", example = "7c9e6679-7425-40de-944b-e07fc1f90ae7")
+            @PathVariable UUID dependenteId,
+            @RequestParam(defaultValue = "false") boolean apenasAtivos) {
+        return ResponseEntity.ok(vinculoDependenciaService.listarPorDependente(dependenteId, apenasAtivos));
     }
 
     @Operation(

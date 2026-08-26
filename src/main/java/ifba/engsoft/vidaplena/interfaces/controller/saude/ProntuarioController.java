@@ -30,9 +30,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/prontuarios")
+@RequestMapping({"/api/v1/prontuarios", "/api/prontuarios"})
 @CrossOrigin(origins = "*")
-@PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
 @Tag(name = "Prontuários", description = "Acesso a prontuários eletrônicos de pacientes e histórico clínico integrado")
 @SecurityRequirement(name = "bearerAuth")
 public class ProntuarioController {
@@ -66,6 +65,7 @@ public class ProntuarioController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
     public ResponseEntity<ProntuarioResponseDTO> criarProntuario(@Valid @RequestBody ProntuarioDTO prontuarioDTO) {
         Prontuario prontuario = new Prontuario();
         
@@ -104,6 +104,7 @@ public class ProntuarioController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR', 'PACIENTE', 'RESPONSAVEL')")
     public ResponseEntity<ProntuarioResponseDTO> obterProntuario(
             @Parameter(description = "Identificador único (UUID) do prontuário", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
             @PathVariable UUID id) {
@@ -137,6 +138,7 @@ public class ProntuarioController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping("/paciente/{pacienteId}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR', 'PACIENTE', 'RESPONSAVEL')")
     public ResponseEntity<ProntuarioResponseDTO> obterProntuarioPorPacienteId(
             @Parameter(description = "Identificador único (UUID) do paciente", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID pacienteId) {
@@ -170,6 +172,7 @@ public class ProntuarioController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping("/paciente/{pacienteId}/historico")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR', 'PACIENTE', 'RESPONSAVEL')")
     public ResponseEntity<List<RegistroAtendimentoResponseDTO>> obterHistoricoClinicoPaciente(
             @Parameter(description = "Identificador único (UUID) do paciente", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID pacienteId) {

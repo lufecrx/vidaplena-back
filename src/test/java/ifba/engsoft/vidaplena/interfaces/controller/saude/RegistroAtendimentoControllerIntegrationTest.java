@@ -49,9 +49,18 @@ class RegistroAtendimentoControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "PACIENTE")
-    @DisplayName("Deve negar acesso (HTTP 403) a perfil PACIENTE")
+    @DisplayName("Deve negar criação de registro de atendimento (HTTP 403) a perfil PACIENTE")
     void deveNegarAcessoParaPaciente() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/" + UUID.randomUUID()))
+        UUID prontuarioId = UUID.randomUUID();
+        UUID profissionalId = UUID.randomUUID();
+        UUID agendamentoId = UUID.randomUUID();
+        RegistroAtendimentoDTO dto = new RegistroAtendimentoDTO(
+                null, prontuarioId, profissionalId, agendamentoId,
+                "Febre", "Gripe", "Paracetamol", "Repouso", "Nota", true
+        );
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isForbidden());
     }
 

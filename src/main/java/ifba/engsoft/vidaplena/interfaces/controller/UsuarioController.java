@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import ifba.engsoft.vidaplena.domain.model.StatusUsuario;
 import ifba.engsoft.vidaplena.domain.model.TipoUsuario;
+import ifba.engsoft.vidaplena.domain.model.Usuario;
 import ifba.engsoft.vidaplena.domain.service.UsuarioService;
 import ifba.engsoft.vidaplena.infrastructure.exception.ApiErrorResponse;
 import ifba.engsoft.vidaplena.interfaces.dto.usuario.AlterarStatusUsuarioRequest;
@@ -358,12 +359,12 @@ public class UsuarioController {
 			Authentication authentication,
 			@Valid @RequestBody CadastroUsuarioRequest request) {
 		String email = authentication.getName();
-		
-		if (!email.equals(request.email())) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas o proprietário pode atualizar seus próprios dados");
-		}
-		
-		UsuarioResponse response = usuarioService.toResponse(usuarioService.buscarPorEmail(email));
+		Usuario usuario = usuarioService.buscarPorEmail(email);
+		UsuarioResponse response = usuarioService.atualizarDadosCadastrais(
+				usuario.getId(),
+				request.nome(),
+				request.telefone(),
+				request.dataNascimento());
 		return ResponseEntity.ok(response);
 	}
 

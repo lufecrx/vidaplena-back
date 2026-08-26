@@ -36,4 +36,10 @@ public interface FamiliaRepository extends JpaRepository<Familia, UUID> {
      */
     @Query("SELECT COUNT(v) FROM VinculoDependencia v JOIN Familia f JOIN f.membros m WHERE f.id = :familiaId AND v.dataFim IS NULL AND (v.responsavel.id = m.id OR v.dependente.id = m.id)")
     long countActiveVinculosByFamiliaId(UUID familiaId);
+
+    /**
+     * Busca todas as famílias que possuem o usuário informado como membro.
+     */
+    @Query("SELECT DISTINCT f FROM Familia f JOIN f.membros m WHERE m.id = :usuarioId")
+    java.util.List<Familia> findByMembroId(@org.springframework.data.repository.query.Param("usuarioId") UUID usuarioId);
 }

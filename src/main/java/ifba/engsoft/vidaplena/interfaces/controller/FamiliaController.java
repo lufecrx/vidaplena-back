@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/familias")
+@RequestMapping({"/api/v1/familias", "/api/familias"})
 @Tag(name = "Famílias", description = "Gestão de núcleos familiares para monitoramento integrado e compartilhado de saúde")
 @SecurityRequirement(name = "bearerAuth")
 public class FamiliaController {
@@ -98,5 +98,55 @@ public class FamiliaController {
             @PathVariable UUID id) {
         FamiliaResponseDTO familia = familiaService.buscarFamilia(id);
         return new ResponseEntity<>(familia, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Buscar famílias de um usuário",
+            description = "Recupera todas as famílias das quais o usuário é membro.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Famílias retornadas com sucesso"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'CUIDADOR', 'FUNCIONARIO_ADMINISTRATIVO', 'RESPONSAVEL', 'PACIENTE')")
+    public ResponseEntity<java.util.List<FamiliaResponseDTO>> buscarFamiliasPorUsuario(
+            @Parameter(description = "Identificador único (UUID) do usuário", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+            @PathVariable UUID usuarioId) {
+        return ResponseEntity.ok(familiaService.listarFamiliasPorUsuario(usuarioId));
+    }
+
+    @Operation(
+            summary = "Listar todas as famílias",
+            description = "Retorna a listagem de todos os núcleos familiares cadastrados.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de famílias retornada com sucesso"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'FUNCIONARIO_ADMINISTRATIVO')")
+    public ResponseEntity<java.util.List<FamiliaResponseDTO>> listarTodasFamilias() {
+        return ResponseEntity.ok(familiaService.buscarTodasFamilias());
     }
 }

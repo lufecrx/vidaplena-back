@@ -156,6 +156,18 @@ class PacienteServiceTest {
     }
 
     @Test
+    void deveObterPacientePorUsuarioId() {
+        when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+        when(pacienteRepository.findByUsuario(usuario)).thenReturn(Optional.of(paciente));
+
+        PacienteResponseDTO response = pacienteService.obterPorUsuarioId(usuario.getId());
+
+        assertNotNull(response);
+        assertEquals(paciente.getId(), response.id());
+        assertEquals(usuario.getId().toString(), response.usuarioId());
+    }
+
+    @Test
     void deveLancarExceptionAoObterPacienteInexistente() {
         UUID idInvalido = UUID.randomUUID();
         when(pacienteRepository.findById(idInvalido)).thenReturn(Optional.empty());

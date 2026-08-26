@@ -76,6 +76,66 @@ public class AgendamentoController {
     }
 
     @Operation(
+            summary = "Obter agendamento por ID",
+            description = "Recupera os detalhes de um agendamento específico pelo seu ID.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Agendamento localizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendamentoResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Agendamento não encontrado para o ID informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'ADMINISTRADOR', 'RESPONSAVEL', 'FUNCIONARIO_ADMINISTRATIVO', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'CUIDADOR')")
+    public ResponseEntity<AgendamentoResponseDTO> obterAgendamento(
+            @Parameter(description = "Identificador único (UUID) do agendamento", example = "999e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id) {
+        AgendamentoResponseDTO response = agendamentoService.obterPorId(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "Listar agendamentos por paciente",
+            description = "Recupera o histórico e agendamentos futuros associados a um paciente.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de agendamentos do paciente retornada com sucesso",
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AgendamentoResponseDTO.class)))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Paciente não encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/paciente/{pacienteId}")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'ADMINISTRADOR', 'RESPONSAVEL', 'FUNCIONARIO_ADMINISTRATIVO', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'CUIDADOR')")
+    public ResponseEntity<List<AgendamentoResponseDTO>> listarAgendamentosPorPaciente(
+            @Parameter(description = "Identificador único (UUID) do paciente", example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID pacienteId) {
+        List<AgendamentoResponseDTO> response = agendamentoService.listarPorPaciente(pacienteId);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
             summary = "Listar agendamentos por profissional de saúde",
             description = "Recupera a agenda de atendimentos associada a um profissional de saúde.")
     @ApiResponses(value = {
@@ -140,6 +200,66 @@ public class AgendamentoController {
             @Parameter(description = "Identificador único (UUID) do agendamento", example = "999e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
         Agendamento agendamento = agendamentoService.atualizarStatus(id, StatusAgendamento.CONFIRMADO);
+        return ResponseEntity.ok(agendamentoService.mapearParaResponseDTO(agendamento));
+    }
+
+    @Operation(
+            summary = "Iniciar atendimento do agendamento",
+            description = "Atualiza a situação do agendamento para EM_ATENDIMENTO.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Agendamento marcado como EM_ATENDIMENTO com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendamentoResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Agendamento não encontrado para o ID informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PutMapping("/{id}/em-atendimento")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'FUNCIONARIO_ADMINISTRATIVO')")
+    public ResponseEntity<AgendamentoResponseDTO> iniciarAtendimento(
+            @Parameter(description = "Identificador único (UUID) do agendamento", example = "999e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id) {
+        Agendamento agendamento = agendamentoService.atualizarStatus(id, StatusAgendamento.EM_ATENDIMENTO);
+        return ResponseEntity.ok(agendamentoService.mapearParaResponseDTO(agendamento));
+    }
+
+    @Operation(
+            summary = "Concluir agendamento",
+            description = "Atualiza a situação do agendamento para CONCLUIDO, habilitando o lançamento do atendimento no prontuário.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Agendamento concluído com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendamentoResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Agendamento não encontrado para o ID informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PutMapping("/{id}/concluir")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'FUNCIONARIO_ADMINISTRATIVO')")
+    public ResponseEntity<AgendamentoResponseDTO> concluirAgendamento(
+            @Parameter(description = "Identificador único (UUID) do agendamento", example = "999e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id) {
+        Agendamento agendamento = agendamentoService.atualizarStatus(id, StatusAgendamento.CONCLUIDO);
         return ResponseEntity.ok(agendamentoService.mapearParaResponseDTO(agendamento));
     }
 

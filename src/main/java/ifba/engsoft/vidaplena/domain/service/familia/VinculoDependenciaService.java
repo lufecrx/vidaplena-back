@@ -107,6 +107,35 @@ public class VinculoDependenciaService {
         return mapearParaResponseDTO(vinculoInativado);
     }
 
+    @Transactional(readOnly = true)
+    public VinculoDependenciaResponseDTO obterPorId(UUID id) {
+        VinculoDependencia vinculo = vinculoDependenciaRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Vínculo de dependência com ID " + id + " não encontrado."));
+        return mapearParaResponseDTO(vinculo);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<VinculoDependenciaResponseDTO> listarPorResponsavel(UUID responsavelId, boolean apenasAtivos) {
+        java.util.List<VinculoDependencia> vinculos = apenasAtivos
+                ? vinculoDependenciaRepository.findByResponsavelIdAndDataFimIsNull(responsavelId)
+                : vinculoDependenciaRepository.findByResponsavelId(responsavelId);
+
+        return vinculos.stream()
+                .map(this::mapearParaResponseDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<VinculoDependenciaResponseDTO> listarPorDependente(UUID dependenteId, boolean apenasAtivos) {
+        java.util.List<VinculoDependencia> vinculos = apenasAtivos
+                ? vinculoDependenciaRepository.findByDependenteIdAndDataFimIsNull(dependenteId)
+                : vinculoDependenciaRepository.findByDependenteId(dependenteId);
+
+        return vinculos.stream()
+                .map(this::mapearParaResponseDTO)
+                .toList();
+    }
+
 
     /**
      * Valida se o responsável possui idade legal/maioridade com base na data

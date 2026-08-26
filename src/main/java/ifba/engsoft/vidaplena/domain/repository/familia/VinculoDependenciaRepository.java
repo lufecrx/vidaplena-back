@@ -27,9 +27,19 @@ public interface VinculoDependenciaRepository extends JpaRepository<VinculoDepen
     List<VinculoDependencia> findByResponsavelIdAndDataFimIsNull(UUID responsavelId);
 
     /**
+     * Busca todos os vínculos de um usuário como responsável (incluindo inativos).
+     */
+    List<VinculoDependencia> findByResponsavelId(UUID responsavelId);
+
+    /**
      * Busca todos os vínculos ativos (sem dataFim) de um usuário como dependente.
      */
     List<VinculoDependencia> findByDependenteIdAndDataFimIsNull(UUID dependenteId);
+
+    /**
+     * Busca todos os vínculos de um usuário como dependente (incluindo inativos).
+     */
+    List<VinculoDependencia> findByDependenteId(UUID dependenteId);
 
     /**
      * Busca vínculos ativos entre uma família e seus membros.

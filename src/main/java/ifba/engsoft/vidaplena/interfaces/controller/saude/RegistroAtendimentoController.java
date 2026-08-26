@@ -27,9 +27,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/registros-atendimento")
+@RequestMapping({"/api/v1/registros-atendimento", "/api/registros-atendimento"})
 @CrossOrigin(origins = "*")
-@PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
 @Tag(name = "Registros de Atendimento", description = "Registros de consultas, evoluções clínicas, diagnósticos, prescrições e adendos de retificação")
 @SecurityRequirement(name = "bearerAuth")
 public class RegistroAtendimentoController {
@@ -67,6 +66,7 @@ public class RegistroAtendimentoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
     public ResponseEntity<RegistroAtendimentoResponseDTO> criarRegistroAtendimento(@Valid @RequestBody RegistroAtendimentoDTO dto) {
         RegistroAtendimento registro = new RegistroAtendimento();
         
@@ -127,6 +127,7 @@ public class RegistroAtendimentoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
     public ResponseEntity<RegistroAtendimentoResponseDTO> atualizarRegistroAtendimento(
             @Parameter(description = "Identificador único (UUID) do registro de atendimento", example = "111e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id,
@@ -172,6 +173,7 @@ public class RegistroAtendimentoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
     public ResponseEntity<Void> deletarRegistroAtendimento(
             @Parameter(description = "Identificador único (UUID) do registro a ser excluído", example = "111e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
@@ -209,6 +211,7 @@ public class RegistroAtendimentoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @PostMapping("/{id}/retificar")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR')")
     public ResponseEntity<NotaRetificacaoResponseDTO> adicionarNotaRetificacao(
             @Parameter(description = "Identificador único (UUID) do registro de atendimento a retificar", example = "111e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id,
@@ -243,6 +246,7 @@ public class RegistroAtendimentoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR', 'PACIENTE', 'RESPONSAVEL')")
     public ResponseEntity<RegistroAtendimentoResponseDTO> obterRegistroAtendimento(
             @Parameter(description = "Identificador único (UUID) do registro de atendimento", example = "111e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
@@ -276,6 +280,7 @@ public class RegistroAtendimentoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping("/prontuario/{prontuarioId}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR', 'PACIENTE', 'RESPONSAVEL')")
     public ResponseEntity<List<RegistroAtendimentoResponseDTO>> obterRegistrosPorProntuario(
             @Parameter(description = "Identificador único (UUID) do prontuário", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
             @PathVariable UUID prontuarioId) {

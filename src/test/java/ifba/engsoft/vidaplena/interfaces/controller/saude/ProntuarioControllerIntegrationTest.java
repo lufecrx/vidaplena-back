@@ -49,9 +49,13 @@ class ProntuarioControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "PACIENTE")
-    @DisplayName("Deve negar acesso (HTTP 403) a perfil PACIENTE")
+    @DisplayName("Deve negar criação de prontuário (HTTP 403) a perfil PACIENTE")
     void deveNegarAcessoParaPaciente() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/" + UUID.randomUUID()))
+        UUID pacienteId = UUID.randomUUID();
+        ProntuarioDTO dto = new ProntuarioDTO(null, pacienteId, "Observações");
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isForbidden());
     }
 

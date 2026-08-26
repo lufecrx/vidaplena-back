@@ -294,4 +294,44 @@ class AgendamentoServiceTest {
 
         assertThrows(RegraNegocioException.class, () -> agendamentoService.atualizarStatus(agendamentoId, StatusAgendamento.CANCELADO));
     }
+
+    @Test
+    @DisplayName("Deve obter agendamento por ID com sucesso")
+    void deveObterAgendamentoPorIdComSucesso() {
+        UUID agendamentoId = UUID.randomUUID();
+        Agendamento agendamento = new Agendamento(
+                paciente, profissional, clinica, null, dataHora, StatusAgendamento.AGENDADO,
+                TipoAtendimento.PRESENCIAL, "Consulta de rotina"
+        );
+        agendamento.setId(agendamentoId);
+
+        when(agendamentoRepository.findById(agendamentoId)).thenReturn(Optional.of(agendamento));
+
+        AgendamentoResponseDTO response = agendamentoService.obterPorId(agendamentoId);
+
+        assertNotNull(response);
+        assertEquals(agendamentoId, response.id());
+        assertEquals("Consulta de rotina", response.observacoes());
+        verify(agendamentoRepository, times(1)).findById(agendamentoId);
+    }
+
+    @Test
+    @DisplayName("Deve listar agendamentos por paciente com sucesso")
+    void deveListarAgendamentosPorPacienteComSucesso() {
+        Agendamento agendamento = new Agendamento(
+                paciente, profissional, clinica, null, dataHora, StatusAgendamento.AGENDADO,
+                TipoAtendimento.PRESENCIAL, "Consulta de rotina"
+        );
+        agendamento.setId(UUID.randomUUID());
+
+        when(pacienteRepository.existsById(pacienteId)).thenReturn(true);
+        when(agendamentoRepository.findByPacienteIdOrderByDataHoraAsc(pacienteId)).thenReturn(List.of(agendamento));
+
+        List<AgendamentoResponseDTO> lista = agendamentoService.listarPorPaciente(pacienteId);
+
+        assertNotNull(lista);
+        assertEquals(1, lista.size());
+        assertEquals("Consulta de rotina", lista.get(0).observacoes());
+        verify(agendamentoRepository, times(1)).findByPacienteIdOrderByDataHoraAsc(pacienteId);
+    }
 }

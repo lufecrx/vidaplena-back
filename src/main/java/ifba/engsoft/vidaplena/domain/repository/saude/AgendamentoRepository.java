@@ -52,6 +52,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, UUID> 
 
     List<Agendamento> findByPacienteId(UUID pacienteId);
 
+    List<Agendamento> findByPacienteIdOrderByDataHoraAsc(UUID pacienteId);
+
     boolean existsByPacienteIdAndProfissionalIdAndDataHora(UUID pacienteId, UUID profissionalId, LocalDateTime dataHora);
 
     boolean existsByPacienteIdAndProfissionalIdAndDataHoraInicio(UUID pacienteId, UUID profissionalId, LocalDateTime dataHoraInicio);

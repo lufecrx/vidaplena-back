@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/pacientes")
+@RequestMapping({"/api/v1/pacientes", "/api/pacientes"})
 @CrossOrigin(origins = "*")
 @Tag(name = "Pacientes", description = "Cadastro e gerenciamento do perfil clínico, histórico familiar, alergias e medicações de pacientes")
 @SecurityRequirement(name = "bearerAuth")
@@ -131,6 +131,35 @@ public class PacienteController {
             @Parameter(description = "Identificador único (UUID) do paciente", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
         PacienteResponseDTO paciente = pacienteService.obterPaciente(id);
+        return new ResponseEntity<>(paciente, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Obter perfil de paciente pelo ID do usuário",
+            description = "Recupera o perfil clínico associado a uma conta de usuário.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Paciente localizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PacienteResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Perfil de paciente não encontrado para o usuário informado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<PacienteResponseDTO> obterPorUsuarioId(
+            @Parameter(description = "Identificador único (UUID) da conta de usuário", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID usuarioId) {
+        PacienteResponseDTO paciente = pacienteService.obterPorUsuarioId(usuarioId);
         return new ResponseEntity<>(paciente, HttpStatus.OK);
     }
 

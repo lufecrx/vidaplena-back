@@ -184,6 +184,18 @@ class ProfissionalServiceTest {
     }
 
     @Test
+    void deveObterProfissionalPorUsuarioId() {
+        when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+        when(profissionalRepository.findByUsuario(usuario)).thenReturn(Optional.of(profissional));
+
+        ProfissionalResponseDTO response = profissionalService.obterPorUsuarioId(usuario.getId());
+
+        assertNotNull(response);
+        assertEquals(profissional.getId(), response.id());
+        assertEquals(usuario.getId().toString(), response.usuarioId());
+    }
+
+    @Test
     void deveLancarExceptionAoObterProfissionalInexistente() {
         UUID idInvalido = UUID.randomUUID();
         when(profissionalRepository.findById(idInvalido)).thenReturn(Optional.empty());

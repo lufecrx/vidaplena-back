@@ -57,6 +57,20 @@ public class UsuarioService {
 		return toResponse(usuario);
 	}
 
+	public UsuarioResponse atualizarDadosCadastrais(UUID usuarioId, String nome, String telefone, java.time.LocalDate dataNascimento) {
+		Usuario usuario = buscarUsuario(usuarioId);
+		if (nome != null && !nome.isBlank()) {
+			usuario.setNome(nome.trim());
+		}
+		if (telefone != null) {
+			usuario.setTelefone(telefone.trim());
+		}
+		if (dataNascimento != null) {
+			usuario.setDataNascimento(dataNascimento);
+		}
+		return toResponse(usuarioRepository.save(usuario));
+	}
+
 	public UsuarioResponse atualizarTipos(UUID usuarioId, Set<TipoUsuario> tipos) {
 		Usuario usuario = buscarUsuario(usuarioId);
 		usuario.substituirTipos(tipos);

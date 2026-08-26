@@ -188,6 +188,19 @@ public class FamiliaService {
     }
 
     /**
+     * Busca todas as famílias que possuem o usuário informado como membro.
+     *
+     * @param usuarioId ID do usuário membro
+     * @return Lista de famílias das quais o usuário faz parte
+     */
+    @Transactional(readOnly = true)
+    public List<FamiliaResponseDTO> listarFamiliasPorUsuario(UUID usuarioId) {
+        return familiaRepository.findByMembroId(usuarioId).stream()
+                .map(this::mapearParaResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Busca todas as famílias.
      * 
      * @return Lista de DTOs de resposta com os dados das famílias encontradas
