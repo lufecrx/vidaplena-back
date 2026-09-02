@@ -1,6 +1,7 @@
 package ifba.engsoft.vidaplena.domain.dto.saude;
 
 import ifba.engsoft.vidaplena.domain.model.saude.Especialidade;
+import ifba.engsoft.vidaplena.interfaces.dto.usuario.UsuarioResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
@@ -19,6 +20,12 @@ public record ProfissionalResponseDTO(
     Especialidade especialidade,
 
     @Schema(description = "Identificador único da clínica vinculada", example = "456e4567-e89b-12d3-a456-426614174000")
-    UUID clinicaId
+    UUID clinicaId,
+
+    @Schema(description = "Dados completos do usuário associado")
+    UsuarioResponse usuario
 ) {
+    public ProfissionalResponseDTO(UUID id, String usuarioId, String registroConselho, Especialidade especialidade, UUID clinicaId) {
+        this(id, usuarioId, registroConselho, especialidade, clinicaId, null);
+    }
 }

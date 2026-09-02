@@ -121,15 +121,7 @@ public class UsuarioService {
 
 	@Transactional(readOnly = true)
 	public UsuarioResponse toResponse(Usuario usuario) {
-		return new UsuarioResponse(
-				usuario.getId(),
-				usuario.getNome(),
-				usuario.getCpf(),
-				usuario.getEmail(),
-				usuario.getTelefone(),
-				usuario.getDataNascimento(),
-				usuario.getStatus(),
-				Set.copyOf(usuario.getTipos()));
+		return UsuarioResponse.from(usuario);
 	}
 
 	private String normalizarEmail(String email) {

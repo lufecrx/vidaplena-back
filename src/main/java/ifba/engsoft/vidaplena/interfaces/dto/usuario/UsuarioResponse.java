@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import ifba.engsoft.vidaplena.domain.model.StatusUsuario;
 import ifba.engsoft.vidaplena.domain.model.TipoUsuario;
+import ifba.engsoft.vidaplena.domain.model.Usuario;
 
 @Schema(description = "Dados de retorno do perfil de usuário")
 public record UsuarioResponse(
@@ -33,4 +34,19 @@ public record UsuarioResponse(
 
 		@Schema(description = "Perfis/papéis de acesso vinculados", example = "[\"PACIENTE\"]")
 		Set<TipoUsuario> tipos) {
+
+	public static UsuarioResponse from(Usuario usuario) {
+		if (usuario == null) {
+			return null;
+		}
+		return new UsuarioResponse(
+				usuario.getId(),
+				usuario.getNome(),
+				usuario.getCpf(),
+				usuario.getEmail(),
+				usuario.getTelefone(),
+				usuario.getDataNascimento(),
+				usuario.getStatus(),
+				usuario.getTipos() != null ? Set.copyOf(usuario.getTipos()) : Set.of());
+	}
 }

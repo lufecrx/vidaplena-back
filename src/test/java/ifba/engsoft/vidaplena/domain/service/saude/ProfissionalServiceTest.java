@@ -181,6 +181,10 @@ class ProfissionalServiceTest {
 
         assertNotNull(response);
         assertEquals(profissional.getId(), response.id());
+        assertNotNull(response.usuario());
+        assertEquals(usuario.getId(), response.usuario().id());
+        assertEquals(usuario.getNome(), response.usuario().nome());
+        assertEquals(usuario.getEmail(), response.usuario().email());
     }
 
     @Test
@@ -193,6 +197,10 @@ class ProfissionalServiceTest {
         assertNotNull(response);
         assertEquals(profissional.getId(), response.id());
         assertEquals(usuario.getId().toString(), response.usuarioId());
+        assertNotNull(response.usuario());
+        assertEquals(usuario.getId(), response.usuario().id());
+        assertEquals(usuario.getNome(), response.usuario().nome());
+        assertEquals(usuario.getEmail(), response.usuario().email());
     }
 
     @Test
@@ -205,13 +213,15 @@ class ProfissionalServiceTest {
 
     @Test
     void deveListarProfissionais() {
-        when(profissionalRepository.findAll()).thenReturn(List.of(profissional));
+        when(profissionalRepository.findAllComUsuario()).thenReturn(List.of(profissional));
 
         List<ProfissionalResponseDTO> list = profissionalService.listarProfissionais();
 
         assertNotNull(list);
         assertEquals(1, list.size());
         assertEquals(profissional.getId(), list.get(0).id());
+        assertNotNull(list.get(0).usuario());
+        assertEquals(usuario.getId(), list.get(0).usuario().id());
     }
 
     @Test

@@ -2,8 +2,11 @@ package ifba.engsoft.vidaplena.interfaces.controller.saude;
 
 import ifba.engsoft.vidaplena.domain.dto.saude.ProfissionalDTO;
 import ifba.engsoft.vidaplena.domain.dto.saude.ProfissionalResponseDTO;
+import ifba.engsoft.vidaplena.domain.model.StatusUsuario;
+import ifba.engsoft.vidaplena.domain.model.TipoUsuario;
 import ifba.engsoft.vidaplena.domain.model.saude.Especialidade;
 import ifba.engsoft.vidaplena.domain.service.saude.ProfissionalService;
+import ifba.engsoft.vidaplena.interfaces.dto.usuario.UsuarioResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -114,12 +118,24 @@ class ProfissionalControllerIntegrationTest {
     @DisplayName("Deve obter profissional por ID (HTTP 200)")
     void deveObterProfissionalPorId() throws Exception {
         UUID id = UUID.randomUUID();
+        UUID usuarioId = UUID.randomUUID();
+        UsuarioResponse usuarioResponse = new UsuarioResponse(
+                usuarioId,
+                "Dr. Roberto",
+                "12345678901",
+                "roberto@example.com",
+                "71988888888",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.MEDICO)
+        );
         ProfissionalResponseDTO response = new ProfissionalResponseDTO(
                 id,
-                UUID.randomUUID().toString(),
+                usuarioId.toString(),
                 "CRM/BA 99999",
                 Especialidade.CLINICO_GERAL,
-                UUID.randomUUID()
+                UUID.randomUUID(),
+                usuarioResponse
         );
 
         when(profissionalService.obterProfissional(id)).thenReturn(response);
@@ -127,9 +143,52 @@ class ProfissionalControllerIntegrationTest {
         mockMvc.perform(get(BASE_URL + "/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
-                .andExpect(jsonPath("$.especialidade").value("CLINICO_GERAL"));
+                .andExpect(jsonPath("$.especialidade").value("CLINICO_GERAL"))
+                .andExpect(jsonPath("$.usuario.id").value(usuarioId.toString()))
+                .andExpect(jsonPath("$.usuario.nome").value("Dr. Roberto"))
+                .andExpect(jsonPath("$.usuario.email").value("roberto@example.com"))
+                .andExpect(jsonPath("$.usuario.status").value("ATIVO"));
 
         verify(profissionalService, times(1)).obterProfissional(id);
+    }
+
+    @Test
+    @WithMockUser(roles = "MEDICO")
+    @DisplayName("Deve obter profissional por ID do usuário (HTTP 200)")
+    void deveObterProfissionalPorUsuarioId() throws Exception {
+        UUID id = UUID.randomUUID();
+        UUID usuarioId = UUID.randomUUID();
+        UsuarioResponse usuarioResponse = new UsuarioResponse(
+                usuarioId,
+                "Dr. Roberto",
+                "12345678901",
+                "roberto@example.com",
+                "71988888888",
+                null,
+                StatusUsuario.ATIVO,
+                Set.of(TipoUsuario.MEDICO)
+        );
+        ProfissionalResponseDTO response = new ProfissionalResponseDTO(
+                id,
+                usuarioId.toString(),
+                "CRM/BA 99999",
+                Especialidade.CLINICO_GERAL,
+                UUID.randomUUID(),
+                usuarioResponse
+        );
+
+        when(profissionalService.obterPorUsuarioId(usuarioId)).thenReturn(response);
+
+        mockMvc.perform(get(BASE_URL + "/usuario/{usuarioId}", usuarioId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.especialidade").value("CLINICO_GERAL"))
+                .andExpect(jsonPath("$.usuario.id").value(usuarioId.toString()))
+                .andExpect(jsonPath("$.usuario.nome").value("Dr. Roberto"))
+                .andExpect(jsonPath("$.usuario.email").value("roberto@example.com"))
+                .andExpect(jsonPath("$.usuario.status").value("ATIVO"));
+
+        verify(profissionalService, times(1)).obterPorUsuarioId(usuarioId);
     }
 
     @Test

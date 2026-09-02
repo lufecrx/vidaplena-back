@@ -7,6 +7,7 @@ import ifba.engsoft.vidaplena.domain.model.saude.Profissional;
 import ifba.engsoft.vidaplena.domain.repository.saude.ProfissionalRepository;
 import ifba.engsoft.vidaplena.domain.repository.UsuarioRepository;
 import ifba.engsoft.vidaplena.domain.service.familia.RegraNegocioException;
+import ifba.engsoft.vidaplena.interfaces.dto.usuario.UsuarioResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,7 +106,7 @@ public class ProfissionalService {
     }
 
     public List<ProfissionalResponseDTO> listarProfissionais() {
-        return profissionalRepository.findAll().stream()
+        return profissionalRepository.findAllComUsuario().stream()
                 .map(this::mapearParaResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -118,12 +119,21 @@ public class ProfissionalService {
     }
 
     private ProfissionalResponseDTO mapearParaResponseDTO(Profissional profissional) {
+        UsuarioResponse usuarioResponse = profissional.getUsuario() != null
+                ? UsuarioResponse.from(profissional.getUsuario())
+                : null;
+
+        String usuarioId = profissional.getUsuario() != null && profissional.getUsuario().getId() != null
+                ? profissional.getUsuario().getId().toString()
+                : null;
+
         return new ProfissionalResponseDTO(
                 profissional.getId(),
-                profissional.getUsuario().getId().toString(),
+                usuarioId,
                 profissional.getRegistroConselho(),
                 profissional.getEspecialidade(),
-                profissional.getClinicaId()
+                profissional.getClinicaId(),
+                usuarioResponse
         );
     }
 }
