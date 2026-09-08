@@ -45,6 +45,24 @@ public class Paciente extends EntidadeAuditavel {
     @Size(max = 10000, message = "O histórico familiar não pode exceder 10000 caracteres")
     private String historicoFamiliar;
 
+    @Column(name = "peso")
+    private Double peso;
+
+    @Column(name = "pressao", length = 20)
+    private String pressao;
+
+    @Column(name = "glicemia")
+    private Double glicemia;
+
+    @Column(name = "horas_sono")
+    private Double horasSono;
+
+    @Column(name = "agua")
+    private Double agua;
+
+    @Column(name = "atividade_fisica", length = 1000)
+    private String atividadeFisica;
+
     // Construtores
     public Paciente() {}
 
@@ -53,51 +71,39 @@ public class Paciente extends EntidadeAuditavel {
     }
 
     // Getters e Setters
-    public UUID getId() {
-        return id;
-    }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
+    public TipoSanguineo getTipoSanguineo() { return tipoSanguineo; }
+    public void setTipoSanguineo(TipoSanguineo tipoSanguineo) { this.tipoSanguineo = tipoSanguineo; }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
+    public List<String> getAlergias() { return alergias; }
+    public void setAlergias(List<String> alergias) { this.alergias = alergias; }
 
-    public TipoSanguineo getTipoSanguineo() {
-        return tipoSanguineo;
-    }
+    public List<String> getMedicamentosContinuos() { return medicamentosContinuos; }
+    public void setMedicamentosContinuos(List<String> medicamentosContinuos) { this.medicamentosContinuos = medicamentosContinuos; }
 
-    public void setTipoSanguineo(TipoSanguineo tipoSanguineo) {
-        this.tipoSanguineo = tipoSanguineo;
-    }
+    public String getHistoricoFamiliar() { return historicoFamiliar; }
+    public void setHistoricoFamiliar(String historicoFamiliar) { this.historicoFamiliar = historicoFamiliar; }
 
-    public List<String> getAlergias() {
-        return alergias;
-    }
+    public Double getPeso() { return peso; }
+    public void setPeso(Double peso) { this.peso = peso; }
 
-    public void setAlergias(List<String> alergias) {
-        this.alergias = alergias;
-    }
+    public String getPressao() { return pressao; }
+    public void setPressao(String pressao) { this.pressao = pressao; }
 
-    public List<String> getMedicamentosContinuos() {
-        return medicamentosContinuos;
-    }
+    public Double getGlicemia() { return glicemia; }
+    public void setGlicemia(Double glicemia) { this.glicemia = glicemia; }
 
-    public void setMedicamentosContinuos(List<String> medicamentosContinuos) {
-        this.medicamentosContinuos = medicamentosContinuos;
-    }
+    public Double getHorasSono() { return horasSono; }
+    public void setHorasSono(Double horasSono) { this.horasSono = horasSono; }
 
-    public String getHistoricoFamiliar() {
-        return historicoFamiliar;
-    }
+    public Double getAgua() { return agua; }
+    public void setAgua(Double agua) { this.agua = agua; }
 
-    public void setHistoricoFamiliar(String historicoFamiliar) {
-        this.historicoFamiliar = historicoFamiliar;
-    }
+    public String getAtividadeFisica() { return atividadeFisica; }
+    public void setAtividadeFisica(String atividadeFisica) { this.atividadeFisica = atividadeFisica; }
 }

@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: vidaplena
@@ -12,6 +15,7 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+    validate-on-migrate: false
   servlet:
     multipart:
       max-file-size: 25MB

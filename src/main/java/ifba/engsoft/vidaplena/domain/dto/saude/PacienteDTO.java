@@ -24,6 +24,27 @@ public record PacienteDTO(
     
     @Schema(description = "Histórico clínico familiar relevante", example = "Pai hipertenso, mãe com histórico de diabetes tipo 2.", maxLength = 10000)
     @Size(max = 10000, message = "O histórico familiar não pode exceder 10000 caracteres")
-    String historicoFamiliar
+    String historicoFamiliar,
+
+    @Schema(description = "Peso atual do paciente em kg", example = "72.5")
+    Double peso,
+
+    @Schema(description = "Pressão arterial no formato Sistólica/Diastólica", example = "120/80")
+    String pressao,
+
+    @Schema(description = "Última medição de glicemia em mg/dL", example = "95.0")
+    Double glicemia,
+
+    @Schema(description = "Média de horas de sono diárias", example = "7.5")
+    Double horasSono,
+
+    @Schema(description = "Consumo diário de água em litros", example = "2.5")
+    Double agua,
+
+    @Schema(description = "Rotina de atividades físicas do paciente", example = "Circuito diário de calistenia")
+    String atividadeFisica
 ) {
+    public PacienteDTO(String usuarioId, TipoSanguineo tipoSanguineo, List<String> alergias, List<String> medicamentosContinuos, String historicoFamiliar) {
+        this(usuarioId, tipoSanguineo, alergias, medicamentosContinuos, historicoFamiliar, null, null, null, null, null, null);
+    }
 }

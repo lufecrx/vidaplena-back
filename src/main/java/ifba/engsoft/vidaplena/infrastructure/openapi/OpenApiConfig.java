@@ -63,7 +63,7 @@ public class OpenApiConfig {
 								.name("MIT License")
 								.url("https://opensource.org/licenses/MIT")))
 				.servers(List.of(
-						new Server().url("http://localhost:8080").description("Ambiente Local de Desenvolvimento"),
+						new Server().url("http://localhost:8081").description("Ambiente Local de Desenvolvimento"),
 						new Server().url("https://api-staging.vidaplena.com.br").description("Ambiente de Homologação (Staging)"),
 						new Server().url("https://api.vidaplena.com.br").description("Ambiente de Produção")))
 				.addSecurityItem(new SecurityRequirement().addList(securitySchemeName))

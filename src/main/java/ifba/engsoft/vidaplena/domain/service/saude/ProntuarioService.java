@@ -5,6 +5,7 @@ import ifba.engsoft.vidaplena.domain.repository.saude.*;
 import ifba.engsoft.vidaplena.domain.service.saude.exception.ProntuarioNotFoundException;
 import ifba.engsoft.vidaplena.domain.service.saude.exception.RegraNegocioException;
 import ifba.engsoft.vidaplena.domain.service.saude.exception.RegistroImutavelException;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,47 +38,41 @@ public class ProntuarioService {
 
     @Transactional
     public Prontuario criarProntuario(Prontuario prontuario) {
-        // Verificar se o paciente existe
         Paciente paciente = pacienteRepository.findById(prontuario.getPaciente().getId())
                 .orElseThrow(() -> new RegraNegocioException("Paciente não encontrado"));
         prontuario.setPaciente(paciente);
 
-        // Verificar se já existe um prontuário para este paciente
         Optional<Prontuario> prontuarioExistente = Optional.ofNullable(prontuarioRepository.findByPacienteId(paciente.getId()));
         if (prontuarioExistente.isPresent()) {
             throw new RegraNegocioException("Já existe um prontuário cadastrado para este paciente");
         }
 
-        return prontuarioRepository.save(prontuario);
+        Prontuario salvo = prontuarioRepository.save(prontuario);
+        Hibernate.initialize(salvo.getPaciente());
+        return salvo;
     }
 
     @Transactional
     public RegistroAtendimento criarRegistroAtendimento(RegistroAtendimento registroAtendimento) {
-        // Verificar se o prontuário existe
         Prontuario prontuario = prontuarioRepository.findById(registroAtendimento.getProntuario().getId())
                 .orElseThrow(() -> new ProntuarioNotFoundException("Prontuário não encontrado"));
         registroAtendimento.setProntuario(prontuario);
 
-        // Verificar se o profissional existe
         Profissional profissional = profissionalRepository.findById(registroAtendimento.getProfissional().getId())
                 .orElseThrow(() -> new RegraNegocioException("Profissional não encontrado"));
         registroAtendimento.setProfissional(profissional);
 
-        // Verificar se o agendamento existe
         Agendamento agendamento = agendamentoRepository.findById(registroAtendimento.getAgendamento().getId())
                 .orElseThrow(() -> new RegraNegocioException("Agendamento não encontrado"));
         
-        // Validar se o agendamento está concluído
         if (agendamento.getStatus() != StatusAgendamento.CONCLUIDO) {
             throw new RegraNegocioException("O registro de atendimento só pode ser criado para um agendamento concluído.");
         }
 
-        // Verificar se o agendamento pertence ao paciente do prontuário
         if (!agendamento.getPaciente().getId().equals(prontuario.getPaciente().getId())) {
             throw new RegraNegocioException("O agendamento fornecido não pertence ao paciente deste prontuário.");
         }
 
-        // Verificar se já existe um registro de atendimento para este agendamento (evitar duplicatas)
         if (registroAtendimentoRepository.existsByAgendamentoId(agendamento.getId())) {
             throw new RegraNegocioException("Já existe um registro de atendimento vinculado a este agendamento.");
         }
@@ -93,12 +88,10 @@ public class ProntuarioService {
         RegistroAtendimento registroExistente = registroAtendimentoRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Registro de atendimento não encontrado"));
 
-        // Se já estiver finalizado, impede qualquer alteração
         if (registroExistente.isFinalizado()) {
             throw new RegistroImutavelException("Este registro de atendimento foi finalizado e não pode ser editado. Correções devem ser feitas via Nota de Retificação.");
         }
 
-        // Atualiza campos permitidos (evolução clínica)
         registroExistente.setSintomasRelatados(dadosAtualizados.getSintomasRelatados());
         registroExistente.setDiagnostico(dadosAtualizados.getDiagnostico());
         registroExistente.setPrescricaoMedica(dadosAtualizados.getPrescricaoMedica());
@@ -114,7 +107,6 @@ public class ProntuarioService {
         RegistroAtendimento registroExistente = registroAtendimentoRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Registro de atendimento não encontrado"));
 
-        // Se já estiver finalizado, impede a exclusão
         if (registroExistente.isFinalizado()) {
             throw new RegistroImutavelException("Este registro de atendimento foi finalizado e não pode ser excluído.");
         }
@@ -127,7 +119,6 @@ public class ProntuarioService {
         RegistroAtendimento registroExistente = registroAtendimentoRepository.findById(registroAtendimentoId)
                 .orElseThrow(() -> new RegraNegocioException("Registro de atendimento não encontrado"));
 
-        // Nota de retificação só pode ser adicionada a atendimentos finalizados
         if (!registroExistente.isFinalizado()) {
             throw new RegraNegocioException("Notas de retificação só podem ser adicionadas a registros de atendimento finalizados. Para registros em rascunho, edite o registro diretamente.");
         }
@@ -139,13 +130,16 @@ public class ProntuarioService {
         return notaRetificacaoRepository.save(nota);
     }
 
+    @Transactional
     public Prontuario obterProntuarioPorId(UUID id) {
-        return prontuarioRepository.findById(id)
+        Prontuario prontuario = prontuarioRepository.findById(id)
                 .orElseThrow(() -> new ProntuarioNotFoundException("Prontuário não encontrado"));
+        Hibernate.initialize(prontuario.getPaciente());
+        return prontuario;
     }
 
+    @Transactional
     public Prontuario obterProntuarioPorPacienteId(UUID pacienteId) {
-        // Verificar se paciente existe
         pacienteRepository.findById(pacienteId)
                 .orElseThrow(() -> new RegraNegocioException("Paciente não encontrado"));
 
@@ -153,22 +147,26 @@ public class ProntuarioService {
         if (prontuario == null) {
             throw new ProntuarioNotFoundException("Prontuário não cadastrado para o paciente informado.");
         }
+        
+        Hibernate.initialize(prontuario.getPaciente());
         return prontuario;
     }
 
+    @Transactional
     public List<RegistroAtendimento> obterRegistrosAtendimentoPorProntuario(UUID prontuarioId) {
-        // Verifica se prontuário existe
         if (!prontuarioRepository.existsById(prontuarioId)) {
             throw new ProntuarioNotFoundException("Prontuário não encontrado");
         }
         return registroAtendimentoRepository.findAllByProntuarioIdOrderByDataRegistroAsc(prontuarioId);
     }
 
+    @Transactional
     public RegistroAtendimento obterRegistroAtendimentoPorId(UUID id) {
         return registroAtendimentoRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Registro de atendimento não encontrado"));
     }
 
+    @Transactional
     public List<RegistroAtendimento> obterHistoricoClinicoPaciente(UUID pacienteId) {
         Prontuario prontuario = obterProntuarioPorPacienteId(pacienteId);
         return registroAtendimentoRepository.findAllByProntuarioIdOrderByDataRegistroAsc(prontuario.getId());
