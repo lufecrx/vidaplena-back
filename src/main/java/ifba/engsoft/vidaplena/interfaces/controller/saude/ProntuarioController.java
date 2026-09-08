@@ -5,11 +5,13 @@ import ifba.engsoft.vidaplena.domain.dto.saude.ProntuarioResponseDTO;
 import ifba.engsoft.vidaplena.domain.dto.saude.RegistroAtendimentoResponseDTO;
 import ifba.engsoft.vidaplena.domain.dto.saude.NotaRetificacaoResponseDTO;
 import ifba.engsoft.vidaplena.domain.dto.saude.DocumentoProntuarioResponseDTO;
+import ifba.engsoft.vidaplena.domain.dto.prontuario.DocumentoVersaoResponse;
 import ifba.engsoft.vidaplena.domain.model.saude.Prontuario;
 import ifba.engsoft.vidaplena.domain.model.saude.Paciente;
 import ifba.engsoft.vidaplena.domain.model.saude.RegistroAtendimento;
 import ifba.engsoft.vidaplena.domain.model.saude.NotaRetificacao;
 import ifba.engsoft.vidaplena.domain.service.saude.ProntuarioService;
+import ifba.engsoft.vidaplena.domain.service.prontuario.DocumentoVersaoService;
 import ifba.engsoft.vidaplena.infrastructure.exception.ApiErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,6 +41,9 @@ public class ProntuarioController {
 
     @Autowired
     private ProntuarioService prontuarioService;
+
+    @Autowired
+    private DocumentoVersaoService documentoVersaoService;
 
     @Operation(
             summary = "Criar prontuário eletrônico",
@@ -182,6 +187,36 @@ public class ProntuarioController {
                 .map(this::mapToRegistroResponseDTO)
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "Listar histórico de versões de um documento",
+            description = "Retorna todas as versões anteriores armazenadas para um documento de prontuário específico.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Histórico de versões retornado com sucesso",
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = DocumentoVersaoResponse.class)))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Não autenticado / Token JWT ausente ou inválido",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno do servidor",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/documentos/{documentoId}/versoes")
+    @PreAuthorize("hasAnyRole('MEDICO', 'NUTRICIONISTA', 'PERSONAL_TRAINER', 'ADMINISTRADOR', 'PACIENTE', 'RESPONSAVEL')")
+    public ResponseEntity<List<DocumentoVersaoResponse>> listarVersoesDocumento(
+            @Parameter(description = "Identificador único (UUID) do documento", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+            @PathVariable UUID documentoId) {
+        List<DocumentoVersaoResponse> versoes = documentoVersaoService.listarVersoesPorDocumento(documentoId);
+        return ResponseEntity.ok(versoes);
     }
 
     // Mappings Helpers
