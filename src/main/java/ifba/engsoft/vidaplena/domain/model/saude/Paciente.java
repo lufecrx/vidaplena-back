@@ -5,9 +5,11 @@ import ifba.engsoft.vidaplena.infrastructure.auditing.EntidadeAuditavel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -33,13 +35,15 @@ public class Paciente extends EntidadeAuditavel {
     @CollectionTable(name = "paciente_alergias", joinColumns = @JoinColumn(name = "paciente_id"))
     @Column(name = "alergia")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<String> alergias;
+    @BatchSize(size = 25)
+    private List<String> alergias = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "paciente_medicamentos_continuos", joinColumns = @JoinColumn(name = "paciente_id"))
     @Column(name = "medicamento_continuo")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<String> medicamentosContinuos;
+    @BatchSize(size = 25)
+    private List<String> medicamentosContinuos = new ArrayList<>();
 
     @Column(name = "historico_familiar", length = 10000)
     @Size(max = 10000, message = "O histórico familiar não pode exceder 10000 caracteres")

@@ -18,6 +18,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.server.ResponseStatusException;
 
 import ifba.engsoft.vidaplena.domain.service.familia.RegraNegocioException;
@@ -143,6 +144,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				HttpStatus.BAD_REQUEST.value(),
 				HttpStatus.BAD_REQUEST.getReasonPhrase(),
 				"Requisição inválida",
+				request.getDescription(false).replace("uri=", ""),
+				List.of(ex.getMostSpecificCause().getMessage())));
+	}
+
+	/**
+	 * Trata exceções ao serializar a resposta HTTP (HttpMessageNotWritableException).
+	 * Ocorre quando Jackson falha ao converter o objeto retornado em JSON (ex: lazy loading sem sessão aberta).
+	 * Retorna HTTP 500 Internal Server Error com o formato padronizado ApiErrorResponse.
+	 *
+	 * @param ex exceção de falha na escrita da mensagem
+	 * @param headers cabeçalhos HTTP
+	 * @param status status HTTP
+	 * @param request contexto da requisição
+	 * @return ResponseEntity com detalhes do erro e status HTTP 500
+	 */
+	@Override
+	protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex, HttpHeaders headers,
+			HttpStatusCode status, WebRequest request) {
+		logger.error("Falha ao serializar corpo da resposta HTTP: " + ex.getMessage(), ex);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(
+				Instant.now(),
+				HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+				"Erro ao processar e serializar resposta do servidor",
 				request.getDescription(false).replace("uri=", ""),
 				List.of(ex.getMostSpecificCause().getMessage())));
 	}
